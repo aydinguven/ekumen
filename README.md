@@ -30,28 +30,29 @@ pip install --no-index --find-links=wheels/ flask pexpect
 
 ## Quick Install
 
-**From GitHub (requires internet):**
+To install Ekumen using the latest release:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/aydinguven/ekumen/main/install.sh | sudo bash
 ```
 
-**Offline (bundled wheels):**
+The service will start automatically on port 5000.
 
-1. Download the latest release: [ekumen-v1.0.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.0.0.tar.gz)
-2. Transfer to your server and run:
+## Offline Install
+
+To install on a server without internet access using the bundled wheels:
+
+1. Download the latest release from another machine: [ekumen-v1.0.1.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.0.1.tar.gz)
+2. Transfer the file to your server.
+3. Run the installer:
 ```bash
-tar -xzf ekumen-v1.0.0.tar.gz
-cd ekumen-v1.0.0
+tar -xzf ekumen-v1.0.1.tar.gz
+cd ekumen-v1.0.1
 sudo ./install-offline.sh
 ```
 
-The service will start automatically on port 5000. Manage it with:
-```bash
-sudo systemctl status ekumen
-sudo systemctl restart ekumen
-```
+## Uninstall
 
-**Uninstall:**
 ```bash
 sudo systemctl stop ekumen
 sudo systemctl disable ekumen
@@ -66,22 +67,7 @@ sudo rm -rf /opt/ekumen
 - Ansible installed on the server
 - `pexpect` for interactive password handling
 
-## Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/aydinguven/ekumen.git
-cd ekumen
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# or
-.\venv\Scripts\activate  # Windows
-
-# Install dependencies
-pip install -r requirements.txt
-```
 
 ## Configuration
 
