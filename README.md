@@ -37,12 +37,12 @@ The service will start automatically on port 5000.
 
 To install on a server without internet access using the bundled wheels:
 
-1. Download the latest release from another machine: [ekumen-v1.1.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.1.0.tar.gz)
+1. Download the latest release from another machine: [ekumen-v1.2.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.2.0.tar.gz)
 2. Transfer the file to your server.
 3. Run the installer:
 ```bash
-tar -xzf ekumen-v1.1.0.tar.gz
-cd ekumen-v1.1.0
+tar -xzf ekumen-v1.2.0.tar.gz
+cd ekumen-v1.2.0
 sudo ./install-offline.sh
 ```
 
@@ -98,12 +98,12 @@ Access the web interface at `http://localhost:5000`
     <td align="center">
       <img src="screenshots/ui-adhoc-dark.png" width="400" alt="Dark Mode UI">
       <br>
-      <b>Dark Mode</b>
+      <b>Dark Mode UI showing Ad-Hoc Command Screen</b>
     </td>
     <td align="center">
       <img src="screenshots/ui-playbook-light.png" width="400" alt="Light Mode UI">
       <br>
-      <b>Light Mode</b>
+      <b>Light Mode UI showing Playbook Screen</b>
     </td>
   </tr>
 </table>
