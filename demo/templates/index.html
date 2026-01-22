@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekumen</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        {% if is_demo %}
+        <div
+            style="background-color: #ff9800; color: #000; padding: 10px; text-align: center; border-radius: 4px; margin-bottom: 20px; font-weight: bold;">
+            ⚠️ DEMO BUILD - No actual connections will be made. Commands are simulated.
+        </div>
+        {% endif %}
+        <header>
+            <h1>🚀 <a href="https://github.com/aydinguven/ekumen" target="_blank" class="title-link"
+                    title="About the name">Ekumen</a></h1>
+            <p class="subtitle">Run playbooks and ad-hoc commands with ease</p>
+            <p class="quote">“To light a candle is to cast a shadow.”</p>
+            <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle Light Mode">☀️</button>
+        </header>
+
+        {% if not ansible_available %}
+        <div class="alert alert-warning">
+            ⚠️ Ansible is not installed or not in PATH. Please install Ansible to use this application.
+        </div>
+        {% endif %}
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="adhoc" onclick="switchMode('adhoc')">
+                <span class="icon">⚡</span> Ad-hoc
+            </button>
+            <button class="mode-btn" data-mode="playbook" onclick="switchMode('playbook')">
+                <span class="icon">📋</span> Playbook
+            </button>
+        </div>
+
+        <!-- Ad-hoc Section -->
+        <section id="adhoc-section" class="section">
+            <h2>Ad-hoc Command</h2>
+            <div class="form-group">
+                <label for="module">Module</label>
+                <select id="module">
+                    <option value="ping">ping</option>
+                    <option value="command">command</option>
+                    <option value="shell">shell</option>
+                    <option value="yum">yum</option>
+                    <option value="dnf">dnf</option>
+                    <option value="apt">apt</option>
+                    <option value="service">service</option>
+                    <option value="systemd">systemd</option>
+                    <option value="copy">copy</option>
+                    <option value="file">file</option>
+                    <option value="user">user</option>
+                    <option value="group">group</option>
+                    <option value="package">package</option>
+                    <option value="lineinfile">lineinfile</option>
+                    <option value="template">template</option>
+                    <option value="debug">debug</option>
+                    <option value="setup">setup</option>
+                    <option value="raw">raw</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="args">Arguments</label>
+                <input type="text" id="args" placeholder="e.g., name=httpd state=started">
+            </div>
+        </section>
+
+        <!-- Playbook Section -->
+        <section id="playbook-section" class="section hidden">
+            <h2>Playbook</h2>
+            <div class="form-group">
+                <label for="playbook">Playbook Content (YAML)</label>
+                <textarea id="playbook" rows="12" placeholder="---
+- name: My Playbook
+  hosts: all
+  tasks:
+    - name: Ping all hosts
+      ping:"></textarea>
+            </div>
+        </section>
+
+        <!-- Inventory Section -->
+        <section class="section">
+            <h2>📦 Inventory & Options</h2>
+            <div class="form-group">
+                <label for="inventory">Hosts (one per line)</label>
+                <textarea id="inventory" rows="6" placeholder="192.168.1.10
+192.168.1.11
+webserver.example.com"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="verbosity">Verbosity</label>
+                <select id="verbosity">
+                    <option value="">Default (No flag)</option>
+                    <option value="v">Verbose (-v)</option>
+                    <option value="vv">More Verbose (-vv)</option>
+                    <option value="vvv">Debug (-vvv)</option>
+                    <option value="vvvv">Connection Debug (-vvvv)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Credentials Section -->
+        <section class="section">
+            <h2>🔐 Credentials</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="e.g., opc">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" placeholder="SSH password">
+                        <button type="button" class="toggle-password"
+                            onclick="togglePassword('password', 'password-icon')">
+                            <span id="password-icon">👁️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privilege Escalation -->
+            <div class="escalation-section">
+                <h3>🔒 Privilege Escalation</h3>
+                <p class="hint">By default, uses sudo with the credentials above.</p>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="different-become" onchange="toggleBecomeCredentials()">
+                    <label for="different-become">Use different credentials for escalation</label>
+                </div>
+
+                <div id="become-credentials" class="become-credentials hidden">
+                    <div class="form-group">
+                        <label for="become-method">Escalation Method</label>
+                        <div class="input-with-action">
+                            <select id="become-method">
+                                <option value="sudo">sudo</option>
+                                <option value="su">su</option>
+                                <option value="pbrun">pbrun</option>
+                                <option value="pfexec">pfexec</option>
+                                <option value="doas">doas</option>
+                                <option value="dzdo">dzdo</option>
+                                <option value="ksu">ksu</option>
+                                <option value="runas">runas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="become-user">Escalation User</label>
+                            <div class="input-with-action">
+                                <input type="text" id="become-user" placeholder="e.g., root">
+                                <button type="button" class="same-as-btn"
+                                    onclick="copyFromRegular('username', 'become-user')" title="Same as regular user">
+                                    ⬆️ Same
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="become-password">Escalation Password</label>
+                            <div class="input-with-action">
+                                <div class="password-wrapper">
+                                    <input type="password" id="become-password" placeholder="Escalation password">
+                                    <button type="button" class="toggle-password"
+                                        onclick="togglePassword('become-password', 'become-password-icon')">
+                                        <span id="become-password-icon">👁️</span>
+                                    </button>
+                                </div>
+                                <button type="button" class="same-as-btn"
+                                    onclick="copyFromRegular('password', 'become-password')"
+                                    title="Same as regular password">
+                                    ⬆️ Same
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Run Button -->
+        <div class="actions">
+            <button id="run-btn" class="run-btn" onclick="runAnsible()">
+                <span class="icon">▶️</span> Run
+            </button>
+        </div>
+
+        <!-- Output Section -->
+        <section id="output-section" class="section hidden">
+            <div class="output-header">
+                <h2>📤 Output</h2>
+                <button id="download-btn" class="download-btn hidden" onclick="downloadOutput()">
+                    <span class="icon">📥</span> Download
+                </button>
+            </div>
+            <div id="output-status" class="output-status"></div>
+            <pre id="output-content"></pre>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <p>Ekumen v{{ version }} • Built by Aydin Aslangoren</p>
+        <p><a href="https://github.com/aydinguven/ekumen" target="_blank"
+                style="color: inherit; text-decoration: underline;">Source Code</a></p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
