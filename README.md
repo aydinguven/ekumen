@@ -92,7 +92,14 @@ Access the web interface at `http://localhost:5000`
 
 ## Screenshots
 
-*Coming soon*
+### Dark Mode
+![Dark Mode UI](screenshots/ui-adhoc-dark.png)
+
+### Light Mode
+![Light Mode UI](screenshots/ui-playbook-light.png)
+
+### Command Output
+![Command Output](screenshots/ui-output.png)
 
 ## Security Notes
 
