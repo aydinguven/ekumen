@@ -234,6 +234,11 @@ class AnsibleRunner:
             # Fail faster on unreachable hosts
             env['ANSIBLE_SSH_ARGS'] = '-o ConnectTimeout=10 -o StrictHostKeyChecking=no'
             
+            # Verbosity
+            verbosity = data.get('verbosity', '')
+            if verbosity in ['v', 'vv', 'vvv', 'vvvv']:
+                cmd.append(f'-{verbosity}')
+            
             # Execute
             success, output, error = self._run_with_pexpect(
                 cmd, 

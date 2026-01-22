@@ -89,6 +89,7 @@ async function runAnsible() {
     // Prepare payload
     const payload = {
         mode: currentMode,
+        verbosity: document.getElementById('verbosity').value,
         inventory: document.getElementById('inventory').value,
         username: document.getElementById('username').value,
         password: document.getElementById('password').value,
