@@ -82,12 +82,23 @@
 
         <!-- Inventory Section -->
         <section class="section">
-            <h2>📦 Inventory</h2>
+            <h2>📦 Inventory & Options</h2>
             <div class="form-group">
                 <label for="inventory">Hosts (one per line)</label>
                 <textarea id="inventory" rows="6" placeholder="192.168.1.10
 192.168.1.11
 webserver.example.com"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="verbosity">Verbosity</label>
+                <select id="verbosity">
+                    <option value="">Default (No flag)</option>
+                    <option value="v">Verbose (-v)</option>
+                    <option value="vv">More Verbose (-vv)</option>
+                    <option value="vvv">Debug (-vvv)</option>
+                    <option value="vvvv">Connection Debug (-vvvv)</option>
+                </select>
             </div>
         </section>
 
