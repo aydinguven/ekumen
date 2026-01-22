@@ -92,11 +92,21 @@ Access the web interface at `http://localhost:5000`
 
 ## Screenshots
 
-### Dark Mode
-![Dark Mode UI](screenshots/ui-adhoc-dark.png)
-
-### Light Mode
-![Light Mode UI](screenshots/ui-playbook-light.png)
+### Interface
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/ui-adhoc-dark.png" width="400" alt="Dark Mode UI">
+      <br>
+      <b>Dark Mode</b>
+    </td>
+    <td align="center">
+      <img src="screenshots/ui-playbook-light.png" width="400" alt="Light Mode UI">
+      <br>
+      <b>Light Mode</b>
+    </td>
+  </tr>
+</table>
 
 ### Command Output
 ![Command Output](screenshots/ui-output.png)
