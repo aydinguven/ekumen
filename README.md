@@ -17,6 +17,12 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 - **Output Download** — Save command outputs as text files
 - **Dark Interface** — Easy on the eyes for long sessions
 
+## Requirements
+
+- **Python 3.8+** (installed by script if missing, but pre-install recommended)
+- **Ansible** (Must be installed on the server)
+- **pexpect** (Installed automatically by the setup script)
+
 ## Quick Install
 
 To install Ekumen using the latest release:
@@ -54,11 +60,7 @@ sudo systemctl daemon-reload
 sudo rm -rf /opt/ekumen
 ```
 
-## Requirements
 
-- Python 3.8+
-- Ansible installed on the server
-- `pexpect` for interactive password handling
 
 
 
