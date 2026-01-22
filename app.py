@@ -19,7 +19,7 @@ last_output = {'content': '', 'timestamp': None}
 @app.route('/')
 def index():
     """Serve the main single-page application."""
-    return render_template('index.html', ansible_available=runner.ansible_available)
+    return render_template('index.html', ansible_available=runner.ansible_available, version=Config.VERSION)
 
 
 @app.route('/run', methods=['POST'])

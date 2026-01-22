@@ -14,6 +14,7 @@
         <header>
             <h1>🚀 Ekumen</h1>
             <p class="subtitle">Run playbooks and ad-hoc commands with ease</p>
+            <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle Light Mode">☀️</button>
         </header>
 
         {% if not ansible_available %}
@@ -188,6 +189,10 @@ webserver.example.com"></textarea>
             <pre id="output-content"></pre>
         </section>
     </div>
+
+    <footer class="footer">
+        Ekumen v{{ version }}
+    </footer>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

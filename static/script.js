@@ -3,6 +3,30 @@
 let currentMode = 'adhoc';
 let lastOutput = '';
 
+// Theme Logic
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+    const btn = document.getElementById('theme-toggle');
+    btn.textContent = theme === 'light' ? '🌙' : '☀️';
+    btn.title = theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+}
+
+// Initialize Theme
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+});
+
 function switchMode(mode) {
     currentMode = mode;
 
