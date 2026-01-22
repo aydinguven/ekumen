@@ -119,10 +119,19 @@ header h1 {
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 8px;
+}
+
+.title-link {
     background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.title-link:hover {
+    opacity: 0.8;
 }
 
 .subtitle {
