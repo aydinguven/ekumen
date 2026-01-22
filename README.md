@@ -7,18 +7,7 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8--3.14-green.svg)
 
-## Compatibility
 
-Pre-built wheels are included in `wheels/` for offline installation:
-
-| Platform | Architectures | Python Versions |
-|----------|---------------|-----------------|
-| Linux | x86_64, ARM64 | 3.8 – 3.14 |
-
-Install offline:
-```bash
-pip install --no-index --find-links=wheels/ flask pexpect
-```
 
 ## Features
 
@@ -50,6 +39,10 @@ tar -xzf ekumen-v1.0.1.tar.gz
 cd ekumen-v1.0.1
 sudo ./install-offline.sh
 ```
+
+**Compatibility:**
+- **OS:** Linux (x86_64, ARM64)
+- **Python:** 3.8 – 3.14 (Wheels included)
 
 ## Uninstall
 
