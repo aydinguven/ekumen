@@ -48,11 +48,16 @@ export ANSIBLE_SHUTTLE_HOST=0.0.0.0
 python3 app.py
 ```
 
-### Option B: Production (Gunicorn)
-Run using Gunicorn for better performance:
+### Option B: Production (Background)
+Run in the background using the daemon flag:
 
 ```bash
-gunicorn -w 4 -b 0.0.0.0:5005 app:app
+gunicorn -w 4 -b 0.0.0.0:5005 app:app --daemon
+```
+
+To stop it later:
+```bash
+pkill gunicorn
 ```
 
 ### Option C: Systemd Service (Persistent)
