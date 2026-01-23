@@ -9,6 +9,27 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 
 > **[Live Demo (Simulated Data)](https://ekumen.aydin.cloud)** - Try it safely in your browser.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/ui-adhoc-dark.png?v=2" height="500" alt="Dark Mode UI">
+      <br>
+      <b>Dark Mode UI showing Ad-Hoc Command Screen</b>
+    </td>
+    <td align="center">
+      <img src="screenshots/ui-playbook-light.png?v=2" height="500" alt="Light Mode UI">
+      <br>
+      <b>Light Mode UI showing Playbook Screen</b>
+    </td>
+  </tr>
+</table>
+
+### Command Output
+![Command Output](screenshots/ui-output.png)
+
+
 
 
 ## Features
@@ -92,26 +113,7 @@ gunicorn -w 4 -b 0.0.0.0:5000 app:app
 
 Access the web interface at `http://localhost:5000`
 
-## Screenshots
 
-### Interface
-<table>
-  <tr>
-    <td align="center">
-      <img src="screenshots/ui-adhoc-dark.png?v=2" height="500" alt="Dark Mode UI">
-      <br>
-      <b>Dark Mode UI showing Ad-Hoc Command Screen</b>
-    </td>
-    <td align="center">
-      <img src="screenshots/ui-playbook-light.png?v=2" height="500" alt="Light Mode UI">
-      <br>
-      <b>Light Mode UI showing Playbook Screen</b>
-    </td>
-  </tr>
-</table>
-
-### Command Output
-![Command Output](screenshots/ui-output.png)
 
 ## Security Notes
 
