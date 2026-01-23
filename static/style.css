@@ -198,6 +198,106 @@
     color: #4ec9b0 !important;
 }
 
+/* CodeMirror Light Mode */
+[data-theme="light"] .code-editor .CodeMirror {
+    background: #ffffff !important;
+    color: #1f1f1f !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror-gutters {
+    background: #f3f3f3 !important;
+    border-right: 1px solid #e0e0e0 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror-linenumber {
+    color: #6e7681 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror-cursor {
+    border-left-color: #1f1f1f !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror-selected {
+    background: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Light Mode YAML Syntax Colors */
+[data-theme="light"] .code-editor .CodeMirror .cm-atom {
+    color: #0451a5 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-number {
+    color: #098658 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-def {
+    color: #0070c1 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-variable {
+    color: #1f1f1f !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-variable-2 {
+    color: #0070c1 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-property {
+    color: #0451a5 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-operator {
+    color: #1f1f1f !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-comment {
+    color: #008000 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-string {
+    color: #a31515 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-string-2 {
+    color: #a31515 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-meta {
+    color: #0000ff !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-qualifier {
+    color: #af00db !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-builtin {
+    color: #795e26 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-bracket {
+    color: #1f1f1f !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-tag {
+    color: #0000ff !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-attribute {
+    color: #0070c1 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-header {
+    color: #0000ff !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-hr {
+    color: #6e7681 !important;
+}
+
+[data-theme="light"] .code-editor .CodeMirror .cm-link {
+    color: #0070c1 !important;
+}
+
 /* Utility Classes */
 .hidden {
     display: none !important;
