@@ -7,6 +7,10 @@
     <title>Ekumen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CodeMirror for YAML highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
 </head>
 
 <body>
@@ -100,12 +104,13 @@
                 <h2>Playbook</h2>
                 <div class="form-group">
                     <label for="playbook">Playbook Content (YAML)</label>
-                    <textarea id="playbook" rows="12" placeholder="---
+                    <div id="playbook-editor" class="code-editor"></div>
+                    <textarea id="playbook" class="hidden">---
 - name: My Playbook
   hosts: all
   tasks:
     - name: Ping all hosts
-      ping:"></textarea>
+      ping:</textarea>
                 </div>
             </section>
 

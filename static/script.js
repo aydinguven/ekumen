@@ -2,6 +2,7 @@
 
 let currentMode = 'adhoc';
 let lastOutput = '';
+let playbookEditor = null; // CodeMirror instance
 
 // Theme Logic
 function toggleTheme() {
@@ -101,7 +102,12 @@ function restoreEntry(id) {
         document.getElementById('module').value = entry.module || 'ping';
         document.getElementById('args').value = entry.args || '';
     } else {
-        document.getElementById('playbook').value = entry.playbook || '';
+        const playbookContent = entry.playbook || '';
+        document.getElementById('playbook').value = playbookContent;
+        // Update CodeMirror if available
+        if (playbookEditor) {
+            playbookEditor.setValue(playbookContent);
+        }
     }
 
     // Scroll to top
@@ -191,6 +197,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sidebarCollapsed) {
         document.getElementById('history-sidebar').classList.add('collapsed');
         document.getElementById('sidebar-expand-btn').classList.remove('hidden');
+    }
+
+    // Initialize CodeMirror for Playbook Editor
+    const editorContainer = document.getElementById('playbook-editor');
+    const textarea = document.getElementById('playbook');
+    if (editorContainer && typeof CodeMirror !== 'undefined') {
+        playbookEditor = CodeMirror(editorContainer, {
+            value: textarea.value,
+            mode: 'yaml',
+            lineNumbers: true,
+            lineWrapping: true,
+            tabSize: 2,
+            indentWithTabs: false,
+            autofocus: false
+        });
+        // Sync editor content to hidden textarea
+        playbookEditor.on('change', () => {
+            textarea.value = playbookEditor.getValue();
+        });
     }
 });
 

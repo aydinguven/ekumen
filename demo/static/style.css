@@ -86,6 +86,118 @@
     --text-muted: #94a3b8;
 }
 
+/* CodeMirror Editor Styling */
+.code-editor {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.code-editor .CodeMirror {
+    height: 280px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.code-editor .CodeMirror-gutters {
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+}
+
+.code-editor .CodeMirror-linenumber {
+    color: var(--text-muted);
+}
+
+.code-editor .CodeMirror-cursor {
+    border-left-color: var(--accent-primary);
+}
+
+.code-editor .CodeMirror-selected {
+    background: var(--accent-glow) !important;
+}
+
+/* YAML Syntax Colors */
+.code-editor .cm-atom {
+    color: #f59e0b;
+}
+
+.code-editor .cm-number {
+    color: #22c55e;
+}
+
+.code-editor .cm-def {
+    color: var(--accent-secondary);
+}
+
+.code-editor .cm-variable {
+    color: var(--text-primary);
+}
+
+.code-editor .cm-variable-2 {
+    color: #818cf8;
+}
+
+.code-editor .cm-property {
+    color: #ef4444;
+}
+
+.code-editor .cm-operator {
+    color: var(--text-secondary);
+}
+
+.code-editor .cm-comment {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.code-editor .cm-string {
+    color: #22c55e;
+}
+
+.code-editor .cm-string-2 {
+    color: #f59e0b;
+}
+
+.code-editor .cm-meta {
+    color: var(--accent-primary);
+}
+
+.code-editor .cm-qualifier {
+    color: #818cf8;
+}
+
+.code-editor .cm-builtin {
+    color: #ef4444;
+}
+
+.code-editor .cm-bracket {
+    color: var(--text-secondary);
+}
+
+.code-editor .cm-tag {
+    color: var(--accent-primary);
+}
+
+.code-editor .cm-attribute {
+    color: #22c55e;
+}
+
+.code-editor .cm-header {
+    color: var(--accent-primary);
+    font-weight: bold;
+}
+
+.code-editor .cm-hr {
+    color: var(--text-muted);
+}
+
+.code-editor .cm-link {
+    color: var(--accent-secondary);
+}
+
 * {
     margin: 0;
     padding: 0;
