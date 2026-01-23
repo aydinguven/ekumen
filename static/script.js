@@ -241,6 +241,11 @@ function switchMode(mode) {
     // Show/hide sections
     document.getElementById('adhoc-section').classList.toggle('hidden', mode !== 'adhoc');
     document.getElementById('playbook-section').classList.toggle('hidden', mode !== 'playbook');
+
+    // Refresh CodeMirror when switching to playbook (fixes layout on first view)
+    if (mode === 'playbook') {
+        refreshCodeMirror();
+    }
 }
 
 function togglePassword(inputId, iconId) {
