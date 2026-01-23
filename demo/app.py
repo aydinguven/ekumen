@@ -53,5 +53,5 @@ def download_output():
 
 if __name__ == '__main__':
     print(f"🚀 Ekumen DEMO starting...")
-    print(f"   Access at http://127.0.0.1:5500")
-    app.run(debug=True, host='0.0.0.0', port=5500)
+    print(f"   Access at http://127.0.0.1:5550")
+    app.run(debug=True, host='0.0.0.0', port=5550)

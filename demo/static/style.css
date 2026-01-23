@@ -37,6 +37,41 @@
     --transition: 0.2s ease;
 }
 
+[data-color-theme="redhat"] {
+    --bg-primary: #151515;
+    --bg-secondary: #212121;
+    --bg-tertiary: #323232;
+    --bg-hover: #3f3f3f;
+
+    --text-primary: #f0f0f0;
+    --text-secondary: #d1d1d1;
+    --text-muted: #8a8a8a;
+
+    --accent-primary: #EE0000;
+    --accent-secondary: #CC0000;
+    --accent-glow: rgba(238, 0, 0, 0.3);
+
+    --success: #3E8635;
+    --success-bg: rgba(62, 134, 53, 0.15);
+    --warning: #F0AB00;
+    --warning-bg: rgba(240, 171, 0, 0.15);
+    --error: #C9190B;
+    --error-bg: rgba(201, 25, 11, 0.15);
+
+    --border-color: #3f3f3f;
+    --border-focus: #EE0000;
+}
+
+--radius-sm: 6px;
+--radius-md: 10px;
+--radius-lg: 16px;
+
+--shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+--shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+
+--transition: 0.2s ease;
+}
+
 [data-theme="light"] {
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
@@ -50,6 +85,14 @@
     --border-color: #e2e8f0;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"][data-color-theme="redhat"] {
+    --bg-primary: #f8f8f8;
+    /* Slightly warmer/neutral than slate */
+    --text-primary: #151515;
+    --text-secondary: #4a4a4a;
+    --text-muted: #8a8a8a;
 }
 
 * {
@@ -342,7 +385,7 @@ textarea {
 
 .run-btn {
     padding: 16px 48px;
-    background: linear-gradient(135deg, var(--accent-primary), #4f46e5);
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     border: none;
     border-radius: var(--radius-md);
     color: white;

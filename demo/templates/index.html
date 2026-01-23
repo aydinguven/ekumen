@@ -22,7 +22,12 @@
                     title="About the name">Ekumen</a></h1>
             <p class="subtitle">Run playbooks and ad-hoc commands with ease</p>
             <p class="quote">“To light a candle is to cast a shadow.”</p>
-            <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle Light Mode">☀️</button>
+            <div style="position: absolute; right: 0; top: 0; display: flex; gap: 8px;">
+                <button id="color-toggle" class="theme-toggle" onclick="toggleColorTheme()" title="Toggle Red Hat Theme"
+                    style="position: static;">🎩</button>
+                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()" title="Toggle Light Mode"
+                    style="position: static;">☀️</button>
+            </div>
         </header>
 
         {% if not ansible_available %}

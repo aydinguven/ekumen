@@ -19,7 +19,7 @@ This is a standalone demo version of **Ekumen**. It acts exactly like the real a
    python app.py
    ```
 
-3. Open `http://localhost:5500`
+3. Open `http://localhost:5550`
 
 ## Note
 All passwords and hosts are ignored. You can type anything.
