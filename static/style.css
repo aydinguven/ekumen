@@ -120,82 +120,82 @@
 }
 
 /* YAML Syntax Colors - High Contrast */
-.code-editor .cm-atom {
-    color: #ce9178;
+.code-editor .CodeMirror .cm-atom {
+    color: #ce9178 !important;
 }
 
-.code-editor .cm-number {
-    color: #b5cea8;
+.code-editor .CodeMirror .cm-number {
+    color: #b5cea8 !important;
 }
 
-.code-editor .cm-def {
-    color: #9cdcfe;
+.code-editor .CodeMirror .cm-def {
+    color: #9cdcfe !important;
 }
 
-.code-editor .cm-variable {
-    color: #d4d4d4;
+.code-editor .CodeMirror .cm-variable {
+    color: #d4d4d4 !important;
 }
 
-.code-editor .cm-variable-2 {
-    color: #9cdcfe;
+.code-editor .CodeMirror .cm-variable-2 {
+    color: #9cdcfe !important;
 }
 
-.code-editor .cm-property {
-    color: #9cdcfe;
+.code-editor .CodeMirror .cm-property {
+    color: #9cdcfe !important;
 }
 
-.code-editor .cm-operator {
-    color: #d4d4d4;
+.code-editor .CodeMirror .cm-operator {
+    color: #d4d4d4 !important;
 }
 
-.code-editor .cm-comment {
-    color: #6a9955;
+.code-editor .CodeMirror .cm-comment {
+    color: #6a9955 !important;
     font-style: italic;
 }
 
-.code-editor .cm-string {
-    color: #ce9178;
+.code-editor .CodeMirror .cm-string {
+    color: #ce9178 !important;
 }
 
-.code-editor .cm-string-2 {
-    color: #ce9178;
+.code-editor .CodeMirror .cm-string-2 {
+    color: #ce9178 !important;
 }
 
-.code-editor .cm-meta {
-    color: #569cd6;
+.code-editor .CodeMirror .cm-meta {
+    color: #569cd6 !important;
 }
 
-.code-editor .cm-qualifier {
-    color: #c586c0;
+.code-editor .CodeMirror .cm-qualifier {
+    color: #c586c0 !important;
 }
 
-.code-editor .cm-builtin {
-    color: #dcdcaa;
+.code-editor .CodeMirror .cm-builtin {
+    color: #dcdcaa !important;
 }
 
-.code-editor .cm-bracket {
-    color: #d4d4d4;
+.code-editor .CodeMirror .cm-bracket {
+    color: #d4d4d4 !important;
 }
 
-.code-editor .cm-tag {
-    color: #569cd6;
+.code-editor .CodeMirror .cm-tag {
+    color: #569cd6 !important;
 }
 
-.code-editor .cm-attribute {
-    color: #9cdcfe;
+.code-editor .CodeMirror .cm-attribute {
+    color: #9cdcfe !important;
 }
 
-.code-editor .cm-header {
-    color: #569cd6;
+.code-editor .CodeMirror .cm-header {
+    color: #569cd6 !important;
     font-weight: bold;
 }
 
-.code-editor .cm-hr {
-    color: #858585;
+.code-editor .CodeMirror .cm-hr {
+    color: #858585 !important;
 }
 
-.code-editor .cm-link {
-    color: #4ec9b0;
+.code-editor .CodeMirror .cm-link {
+    color: #4ec9b0 !important;
 }
 
 /* Utility Classes */
