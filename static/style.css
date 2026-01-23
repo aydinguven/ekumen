@@ -198,6 +198,11 @@
     color: var(--accent-secondary);
 }
 
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
 * {
     margin: 0;
     padding: 0;

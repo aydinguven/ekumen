@@ -13,6 +13,7 @@ function toggleTheme() {
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcon(newTheme);
+    refreshCodeMirror();
 }
 
 function updateThemeIcon(theme) {
@@ -34,6 +35,7 @@ function toggleColorTheme() {
 
     localStorage.setItem('color-theme', newColor);
     updateColorIcon(newColor);
+    refreshCodeMirror();
 }
 
 function updateColorIcon(color) {
@@ -175,6 +177,15 @@ function toggleSidebar() {
 
     expandBtn.classList.toggle('hidden', !isCollapsed);
     localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+}
+
+function refreshCodeMirror() {
+    // Force CodeMirror to re-read CSS variables after theme change
+    if (playbookEditor) {
+        setTimeout(() => {
+            playbookEditor.refresh();
+        }, 50);
+    }
 }
 
 // Initialize Theme and History
