@@ -118,6 +118,15 @@ Access the web interface at `http://localhost:5000`
 - Restrict network access appropriately
 - Passwords are never stored, only used in-memory for execution
 
+## Roadmap
+
+- **Playbook Library**: Load saved playbooks from a server directory
+- **Live Output Streaming**: Stream Ansible output using SSE/WebSockets
+- **Command History**: Local history of executed commands
+- **Syntax Highlighting**: Code editor for YAML/Playbooks
+- **Host Limiting**: Add --limit support to UI/Backend
+- **PAM Integration**: Support for Kron PAM and others
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
