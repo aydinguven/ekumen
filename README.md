@@ -98,12 +98,12 @@ Access the web interface at `http://localhost:5000`
 <table>
   <tr>
     <td align="center">
-      <img src="screenshots/ui-adhoc-dark.png" width="400" alt="Dark Mode UI">
+      <img src="screenshots/ui-adhoc-dark.png?v=1" width="400" alt="Dark Mode UI">
       <br>
       <b>Dark Mode UI showing Ad-Hoc Command Screen</b>
     </td>
     <td align="center">
-      <img src="screenshots/ui-playbook-light.png" width="400" alt="Light Mode UI">
+      <img src="screenshots/ui-playbook-light.png?v=1" width="400" alt="Light Mode UI">
       <br>
       <b>Light Mode UI showing Playbook Screen</b>
     </td>
