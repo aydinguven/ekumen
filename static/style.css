@@ -95,107 +95,107 @@
 
 .code-editor .CodeMirror {
     height: 280px;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background: #1e1e1e;
+    color: #d4d4d4;
     font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
     font-size: 0.9rem;
     line-height: 1.5;
 }
 
 .code-editor .CodeMirror-gutters {
-    background: var(--bg-secondary);
-    border-right: 1px solid var(--border-color);
+    background: #252526;
+    border-right: 1px solid #3c3c3c;
 }
 
 .code-editor .CodeMirror-linenumber {
-    color: var(--text-muted);
+    color: #858585;
 }
 
 .code-editor .CodeMirror-cursor {
-    border-left-color: var(--accent-primary);
+    border-left-color: #fff;
 }
 
 .code-editor .CodeMirror-selected {
-    background: var(--accent-glow) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* YAML Syntax Colors */
+/* YAML Syntax Colors - High Contrast */
 .code-editor .cm-atom {
-    color: #f59e0b;
+    color: #ce9178;
 }
 
 .code-editor .cm-number {
-    color: #22c55e;
+    color: #b5cea8;
 }
 
 .code-editor .cm-def {
-    color: var(--accent-secondary);
+    color: #9cdcfe;
 }
 
 .code-editor .cm-variable {
-    color: var(--text-primary);
+    color: #d4d4d4;
 }
 
 .code-editor .cm-variable-2 {
-    color: #818cf8;
+    color: #9cdcfe;
 }
 
 .code-editor .cm-property {
-    color: #ef4444;
+    color: #9cdcfe;
 }
 
 .code-editor .cm-operator {
-    color: var(--text-secondary);
+    color: #d4d4d4;
 }
 
 .code-editor .cm-comment {
-    color: var(--text-muted);
+    color: #6a9955;
     font-style: italic;
 }
 
 .code-editor .cm-string {
-    color: #22c55e;
+    color: #ce9178;
 }
 
 .code-editor .cm-string-2 {
-    color: #f59e0b;
+    color: #ce9178;
 }
 
 .code-editor .cm-meta {
-    color: var(--accent-primary);
+    color: #569cd6;
 }
 
 .code-editor .cm-qualifier {
-    color: #818cf8;
+    color: #c586c0;
 }
 
 .code-editor .cm-builtin {
-    color: #ef4444;
+    color: #dcdcaa;
 }
 
 .code-editor .cm-bracket {
-    color: var(--text-secondary);
+    color: #d4d4d4;
 }
 
 .code-editor .cm-tag {
-    color: var(--accent-primary);
+    color: #569cd6;
 }
 
 .code-editor .cm-attribute {
-    color: #22c55e;
+    color: #9cdcfe;
 }
 
 .code-editor .cm-header {
-    color: var(--accent-primary);
+    color: #569cd6;
     font-weight: bold;
 }
 
 .code-editor .cm-hr {
-    color: var(--text-muted);
+    color: #858585;
 }
 
 .code-editor .cm-link {
-    color: var(--accent-secondary);
+    color: #4ec9b0;
 }
 
 /* Utility Classes */
