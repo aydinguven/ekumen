@@ -20,11 +20,41 @@ function updateThemeIcon(theme) {
     btn.title = theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
 }
 
+function toggleColorTheme() {
+    const html = document.documentElement;
+    const currentColor = html.getAttribute('data-color-theme');
+    const newColor = currentColor === 'redhat' ? 'default' : 'redhat';
+
+    if (newColor === 'default') {
+        html.removeAttribute('data-color-theme');
+    } else {
+        html.setAttribute('data-color-theme', newColor);
+    }
+
+    localStorage.setItem('color-theme', newColor);
+    updateColorIcon(newColor);
+}
+
+function updateColorIcon(color) {
+    const btn = document.getElementById('color-toggle');
+    // Visual indicator: Maybe change emoji or style
+    btn.style.opacity = color === 'redhat' ? '1' : '0.5';
+    btn.style.filter = color === 'redhat' ? 'grayscale(0%)' : 'grayscale(100%)';
+}
+
 // Initialize Theme
 document.addEventListener('DOMContentLoaded', () => {
+    // Light/Dark
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
+
+    // Color Theme
+    const savedColor = localStorage.getItem('color-theme') || 'default';
+    if (savedColor === 'redhat') {
+        document.documentElement.setAttribute('data-color-theme', 'redhat');
+    }
+    updateColorIcon(savedColor);
 });
 
 function switchMode(mode) {
