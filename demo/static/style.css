@@ -4,40 +4,7 @@
    =========================== */
 
 :root {
-    --bg-primary: #0f0f14;
-    --bg-secondary: #1a1a23;
-    --bg-tertiary: #252532;
-    --bg-hover: #2d2d3d;
-
-    --text-primary: #e8e8f0;
-    --text-secondary: #a0a0b8;
-    --text-muted: #6b6b80;
-
-    --accent-primary: #6366f1;
-    --accent-secondary: #818cf8;
-    --accent-glow: rgba(99, 102, 241, 0.3);
-
-    --success: #22c55e;
-    --success-bg: rgba(34, 197, 94, 0.15);
-    --warning: #f59e0b;
-    --warning-bg: rgba(245, 158, 11, 0.15);
-    --error: #ef4444;
-    --error-bg: rgba(239, 68, 68, 0.15);
-
-    --border-color: #2d2d3d;
-    --border-focus: #6366f1;
-
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-
-    --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-
-    --transition: 0.2s ease;
-}
-
-[data-color-theme="redhat"] {
+    /* Default: Red Hat Theme */
     --bg-primary: #151515;
     --bg-secondary: #212121;
     --bg-tertiary: #323232;
@@ -60,31 +27,63 @@
 
     --border-color: #3f3f3f;
     --border-focus: #EE0000;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+
+    --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+
+    --transition: 0.2s ease;
 }
 
+/* Toggle: Cosmic Purple Theme */
+[data-color-theme="purple"] {
+    --bg-primary: #0f0f14;
+    --bg-secondary: #1a1a23;
+    --bg-tertiary: #252532;
+    --bg-hover: #2d2d3d;
 
+    --text-primary: #e8e8f0;
+    --text-secondary: #a0a0b8;
+    --text-muted: #6b6b80;
+
+    --accent-primary: #6366f1;
+    --accent-secondary: #818cf8;
+    --accent-glow: rgba(99, 102, 241, 0.3);
+
+    --success: #22c55e;
+    --success-bg: rgba(34, 197, 94, 0.15);
+    --warning: #f59e0b;
+    --warning-bg: rgba(245, 158, 11, 0.15);
+    --error: #ef4444;
+    --error-bg: rgba(239, 68, 68, 0.15);
+
+    --border-color: #2d2d3d;
+    --border-focus: #6366f1;
+}
 
 [data-theme="light"] {
-    --bg-primary: #f8fafc;
+    --bg-primary: #f8f8f8;
     --bg-secondary: #ffffff;
     --bg-tertiary: #f1f5f9;
     --bg-hover: #e2e8f0;
 
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
+    --text-primary: #151515;
+    --text-secondary: #4a4a4a;
+    --text-muted: #8a8a8a;
 
     --border-color: #e2e8f0;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="light"][data-color-theme="redhat"] {
-    --bg-primary: #f8f8f8;
-    /* Slightly warmer/neutral than slate */
-    --text-primary: #151515;
-    --text-secondary: #4a4a4a;
-    --text-muted: #8a8a8a;
+[data-theme="light"][data-color-theme="purple"] {
+    --bg-primary: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
 }
 
 * {

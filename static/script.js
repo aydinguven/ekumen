@@ -23,7 +23,7 @@ function updateThemeIcon(theme) {
 function toggleColorTheme() {
     const html = document.documentElement;
     const currentColor = html.getAttribute('data-color-theme');
-    const newColor = currentColor === 'redhat' ? 'default' : 'redhat';
+    const newColor = currentColor === 'purple' ? 'default' : 'purple';
 
     if (newColor === 'default') {
         html.removeAttribute('data-color-theme');
@@ -37,9 +37,9 @@ function toggleColorTheme() {
 
 function updateColorIcon(color) {
     const btn = document.getElementById('color-toggle');
-    // Visual indicator: Maybe change emoji or style
-    btn.style.opacity = color === 'redhat' ? '1' : '0.5';
-    btn.style.filter = color === 'redhat' ? 'grayscale(0%)' : 'grayscale(100%)';
+    // Visual indicator: purple theme = button lit up
+    btn.style.opacity = color === 'purple' ? '1' : '0.5';
+    btn.style.filter = color === 'purple' ? 'grayscale(0%)' : 'grayscale(100%)';
 }
 
 // ========== HISTORY MANAGEMENT ==========
@@ -180,8 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Color Theme
     const savedColor = localStorage.getItem('color-theme') || 'default';
-    if (savedColor === 'redhat') {
-        document.documentElement.setAttribute('data-color-theme', 'redhat');
+    if (savedColor === 'purple') {
+        document.documentElement.setAttribute('data-color-theme', 'purple');
     }
     updateColorIcon(savedColor);
 
