@@ -7,6 +7,8 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8--3.14-green.svg)
 
+> **[Live Demo (Simulated Data)](https://ekumen.aydin.cloud)** - Try it safely in your browser.
+
 
 
 ## Features
