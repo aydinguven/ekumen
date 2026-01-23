@@ -122,7 +122,7 @@ Access the web interface at `http://localhost:5000`
 
 ## Roadmap
 
-- **Playbook Library**: Load saved playbooks from a server directory
+- ~~**Playbook Library**: Load saved playbooks from a server directory~~ ✅ *Added in v1.4.0*
 - **Live Output Streaming**: Stream Ansible output using SSE/WebSockets
 - ~~**Command History**: Local history of executed commands~~ ✅ *Added in v1.3.0*
 - ~~**Syntax Highlighting**: Code editor for YAML/Playbooks~~ ✅ *Added in v1.3.0*
