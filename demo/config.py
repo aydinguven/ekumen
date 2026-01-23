@@ -25,3 +25,6 @@ class Config:
     # Allowed modules (empty list = all allowed)
     ALLOWED_MODULES = os.environ.get('ANSIBLE_SHUTTLE_ALLOWED_MODULES', '').split(',')
     ALLOWED_MODULES = [m.strip() for m in ALLOWED_MODULES if m.strip()]
+    
+    # Playbook Library
+    PLAYBOOK_DIR = os.environ.get('ANSIBLE_SHUTTLE_PLAYBOOK_DIR', '/opt/ekumen/playbooks')

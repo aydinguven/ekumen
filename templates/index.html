@@ -101,7 +101,17 @@
 
             <!-- Playbook Section -->
             <section id="playbook-section" class="section hidden">
-                <h2>Playbook</h2>
+                <div class="section-header">
+                    <h2>Playbook</h2>
+                    <div class="playbook-actions">
+                        <select id="playbook-library" onchange="loadPlaybook(this.value)" title="Load saved playbook">
+                            <option value="">📂 Load...</option>
+                        </select>
+                        <button class="btn-secondary" onclick="savePlaybook()" title="Save playbook">💾 Save</button>
+                        <button class="btn-secondary btn-danger" id="delete-playbook-btn" onclick="deletePlaybook()"
+                            title="Delete playbook" style="display: none;">🗑️</button>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label for="playbook">Playbook Content (YAML)</label>
                     <div id="playbook-editor" class="code-editor"></div>

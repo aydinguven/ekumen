@@ -245,6 +245,124 @@ function switchMode(mode) {
     // Refresh CodeMirror when switching to playbook (fixes layout on first view)
     if (mode === 'playbook') {
         refreshCodeMirror();
+        loadPlaybookList();
+    }
+}
+
+// ========== PLAYBOOK LIBRARY ==========
+let currentLoadedPlaybook = null;
+
+async function loadPlaybookList() {
+    const select = document.getElementById('playbook-library');
+    try {
+        const response = await fetch('/playbooks');
+        const data = await response.json();
+
+        // Keep first option, remove rest
+        select.innerHTML = '<option value="">📂 Load...</option>';
+
+        if (data.playbooks && data.playbooks.length > 0) {
+            data.playbooks.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load playbook list:', error);
+    }
+}
+
+async function loadPlaybook(name) {
+    if (!name) {
+        currentLoadedPlaybook = null;
+        document.getElementById('delete-playbook-btn').style.display = 'none';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/playbooks/${encodeURIComponent(name)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const content = data.content;
+            document.getElementById('playbook').value = content;
+            if (playbookEditor) {
+                playbookEditor.setValue(content);
+            }
+            currentLoadedPlaybook = data.name;
+            document.getElementById('delete-playbook-btn').style.display = 'inline-block';
+        } else {
+            alert('Failed to load playbook: ' + data.error);
+        }
+    } catch (error) {
+        alert('Failed to load playbook: ' + error.message);
+    }
+}
+
+async function savePlaybook() {
+    const content = playbookEditor ? playbookEditor.getValue() : document.getElementById('playbook').value;
+
+    if (!content.trim()) {
+        alert('Playbook content is empty');
+        return;
+    }
+
+    const defaultName = currentLoadedPlaybook || '';
+    const name = prompt('Enter playbook name:', defaultName.replace('.yml', '').replace('.yaml', ''));
+
+    if (!name) return;
+
+    try {
+        const response = await fetch('/playbooks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, content })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            currentLoadedPlaybook = data.name;
+            loadPlaybookList();
+            // Select the saved playbook
+            setTimeout(() => {
+                document.getElementById('playbook-library').value = data.name;
+                document.getElementById('delete-playbook-btn').style.display = 'inline-block';
+            }, 100);
+            alert('Playbook saved: ' + data.name);
+        } else {
+            alert('Failed to save: ' + data.error);
+        }
+    } catch (error) {
+        alert('Failed to save: ' + error.message);
+    }
+}
+
+async function deletePlaybook() {
+    if (!currentLoadedPlaybook) return;
+
+    if (!confirm(`Delete playbook "${currentLoadedPlaybook}"?`)) return;
+
+    try {
+        const response = await fetch(`/playbooks/${encodeURIComponent(currentLoadedPlaybook)}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            currentLoadedPlaybook = null;
+            document.getElementById('playbook-library').value = '';
+            document.getElementById('delete-playbook-btn').style.display = 'none';
+            loadPlaybookList();
+            alert('Playbook deleted');
+        } else {
+            alert('Failed to delete: ' + data.error);
+        }
+    } catch (error) {
+        alert('Failed to delete: ' + error.message);
     }
 }
 
