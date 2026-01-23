@@ -4,6 +4,27 @@ let currentMode = 'adhoc';
 let lastOutput = '';
 let playbookEditor = null; // CodeMirror instance
 
+// ========== TOAST NOTIFICATIONS ==========
+function showToast(message, type = 'info') {
+    // Remove existing toast
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(toast);
+
+    // Animate in
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Auto remove
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 // Theme Logic
 function toggleTheme() {
     const html = document.documentElement;
@@ -297,7 +318,7 @@ async function loadPlaybook(name) {
             alert('Failed to load playbook: ' + data.error);
         }
     } catch (error) {
-        alert('Failed to load playbook: ' + error.message);
+        showToast('Failed to load: ' + error.message, 'error');
     }
 }
 
@@ -305,7 +326,7 @@ async function savePlaybook() {
     const content = playbookEditor ? playbookEditor.getValue() : document.getElementById('playbook').value;
 
     if (!content.trim()) {
-        alert('Playbook content is empty');
+        showToast('Playbook content is empty', 'error');
         return;
     }
 
@@ -331,12 +352,12 @@ async function savePlaybook() {
                 document.getElementById('playbook-library').value = data.name;
                 document.getElementById('delete-playbook-btn').style.display = 'inline-block';
             }, 100);
-            alert('Playbook saved: ' + data.name);
+            showToast('Saved: ' + data.name, 'success');
         } else {
-            alert('Failed to save: ' + data.error);
+            showToast('Failed to save: ' + data.error, 'error');
         }
     } catch (error) {
-        alert('Failed to save: ' + error.message);
+        showToast('Failed to save: ' + error.message, 'error');
     }
 }
 
@@ -357,12 +378,12 @@ async function deletePlaybook() {
             document.getElementById('playbook-library').value = '';
             document.getElementById('delete-playbook-btn').style.display = 'none';
             loadPlaybookList();
-            alert('Playbook deleted');
+            showToast('Playbook deleted', 'success');
         } else {
-            alert('Failed to delete: ' + data.error);
+            showToast('Failed to delete: ' + data.error, 'error');
         }
     } catch (error) {
-        alert('Failed to delete: ' + error.message);
+        showToast('Failed to delete: ' + error.message, 'error');
     }
 }
 
