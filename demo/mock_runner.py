@@ -1,90 +1,119 @@
-"""
-Ekumen - Mock Runner Module (DEMO)
-Simulates execution of Ansible ad-hoc commands and playbooks for demo purposes.
-"""
 
 import time
 import random
-import datetime
 
-class MockRunner:
-    def __init__(self):
+class MockAnsibleRunner:
+    def __init__(self, allowed_modules=None):
+        # Always return True for the demo
         self.ansible_available = True
     
     def run(self, data):
-        """Simulate running an Ansible command."""
-        mode = data.get('mode', 'adhoc')
-        inventory_content = data.get('inventory', '')
-        verbosity = data.get('verbosity', '')
-        
-        # Simulate network latency
+        """
+        Simulate Ansible execution with mocked data.
+        """
+        # Simulate network/processing delay to make it feel real
         time.sleep(random.uniform(0.5, 2.0))
         
-        # Parse hosts from inventory (simple simulation)
-        hosts = [line.strip() for line in inventory_content.split('\n') 
-                 if line.strip() and not line.strip().startswith(('#', '['))]
+        mode = data.get('mode', 'adhoc')
+        inventory = data.get('inventory', '')
         
-        if not hosts:
-            hosts = ["10.0.0.51", "10.0.0.52", "10.0.0.53"]
-            
-        output_buffer = []
-        success = True
-        
-        # Add verbosity header if requested
-        if verbosity:
-            output_buffer.append(f"Using /etc/ansible/ansible.cfg as config file")
-            output_buffer.append(f"SSH password: ")
-            output_buffer.append(f"BECOME password[defaults to SSH password]: ")
-            output_buffer.append("")
+        # Check for error triggering in inventory for demo purposes
+        if "error" in inventory.lower() or "fail" in inventory.lower():
+             return {
+                'success': False,
+                'output': "",
+                'error': "FAILED! => {\n    \"msg\": \"Failed to connect to the host via ssh: ssh: connect to host 192.168.1.100 port 22: Connection refused\"\n}"
+            }
 
         if mode == 'adhoc':
             module = data.get('module', 'ping')
             args = data.get('args', '')
             
-            for host in hosts:
-                # Simulate a failure for a specific host or randomly
-                if "fail" in host or (random.random() < 0.1 and len(hosts) > 1):
-                    output_buffer.append(f"{host} | FAILED! => {{")
-                    output_buffer.append(f'    "msg": "Authentication failed or connection timed out",')
-                    output_buffer.append(f'    "changed": false')
-                    output_buffer.append(f"}}")
-                else:
-                    output_buffer.append(f"{host} | SUCCESS => {{")
-                    output_buffer.append(f'    "ansible_facts": {{')
-                    output_buffer.append(f'        "discovered_interpreter_python": "/usr/bin/python3"')
-                    output_buffer.append(f'    }},')
-                    output_buffer.append(f'    "changed": false,')
-                    output_buffer.append(f'    "ping": "pong"')
-                    if module == "command" or module == "shell":
-                         output_buffer.append(f'    ,"stdout": "Simulated output for: {args}",')
-                         output_buffer.append(f'    "rc": 0')
-                    output_buffer.append(f"}}")
-                    
-        else: # playbook
-            output_buffer.append(f"PLAY [Setup Web Server and Serve System Info] **************************************************")
-            output_buffer.append("")
-            
-            output_buffer.append(f"TASK [Gathering Facts] *************************************************************************")
-            for host in hosts:
-                output_buffer.append(f"ok: [{host}]")
-            output_buffer.append("")
+            output = self._get_mock_adhoc_output(module, args)
+            return {
+                'success': True,
+                'output': output,
+                'error': ''
+            }
+        else:
+            # Playbook mode
+            playbook_content = data.get('playbook', '')
+            output = self._get_mock_playbook_output(playbook_content)
+            return {
+                'success': True,
+                'output': output,
+                'error': ''
+            }
 
-            tasks = ["Install Apache", "Start Service", "Deploy Content"]
-            for task in tasks:
-                 output_buffer.append(f"TASK [{task}] *************************************************************************")
-                 for host in hosts:
-                    if random.random() < 0.2:
-                        output_buffer.append(f"changed: [{host}]")
-                    else:
-                        output_buffer.append(f"ok: [{host}]")
-                 output_buffer.append("")
-            
-            output_buffer.append(f"PLAY RECAP *************************************************************************************")
-            for host in hosts:
-                output_buffer.append(f"{host.ljust(26)} : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   ")
+    def _get_mock_adhoc_output(self, module, args):
+        host = "192.168.1.10"
+        
+        if module == 'ping':
+            return f"""{host} | SUCCESS => {{
+    "ansible_facts": {{
+        "discovered_interpreter_python": "/usr/bin/python3"
+    }},
+    "changed": false,
+    "ping": "pong"
+}}"""
+        elif module == 'command' or module == 'shell':
+            if 'uptime' in args:
+                return f"{host} | CHANGED | rc=0 >>\n 14:32:01 up 45 days, 2:12,  1 user,  load average: 0.01, 0.04, 0.05"
+            elif 'free' in args:
+                return f"""{host} | CHANGED | rc=0 >>
+              total        used        free      shared  buff/cache   available
+Mem:        8174856     1234568     5432100       12345     1508188     6654321
+Swap:       2097148           0     2097148"""
+            elif 'ls' in args or 'dir' in args:
+                return f"""{host} | CHANGED | rc=0 >>
+anaconda-ks.cfg
+original-ks.cfg
+test_file.txt
+var_log_copy.tar.gz"""
+            else:
+                 return f"{host} | CHANGED | rc=0 >>\nCommand '{module} {args}' executed successfully (Simulated Output)"
+        
+        elif module == 'setup':
+             return f"""{host} | SUCCESS => {{
+    "ansible_facts": {{
+        "ansible_all_ipv4_addresses": [
+            "192.168.1.10"
+        ],
+        "ansible_architecture": "x86_64",
+        "ansible_distribution": "CentOS",
+        "ansible_distribution_major_version": "8",
+        "ansible_memtotal_mb": 7900,
+        "ansible_os_family": "RedHat",
+        "ansible_processor_vcpus": 2
+    }},
+    "changed": false
+}}"""
 
-        return {
-            'success': success,
-            'output': "\n".join(output_buffer),
-            'error': ''
-        }
+        return f"{host} | SUCCESS => {{\n    \"changed\": true,\n    \"msg\": \"Simulated execution of {module}\"\n}}"
+
+    def _get_mock_playbook_output(self, content):
+        # Extract hosts if possible, otherwise default
+        host = "192.168.1.10"
+        
+        return f"""
+PLAY [Simulated Deployment] ****************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [{host}]
+
+TASK [Install required packages] ***********************************************
+changed: [{host}] => (item=nginx)
+ok: [{host}] => (item=postgresql)
+
+TASK [Ensure service is running] **********************************************
+changed: [{host}]
+
+TASK [Copy configuration file] *************************************************
+changed: [{host}]
+
+TASK [Restart service] *********************************************************
+changed: [{host}]
+
+PLAY RECAP *********************************************************************
+{host}             : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+"""

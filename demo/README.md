@@ -1,43 +1,38 @@
-# Ekumen - Live Demo
+# Ekumen (Demo Version)
 
-This is the simulated demo version of [Ekumen](https://github.com/aydinguven/ekumen).
-It runs entirely in Python without requiring Ansible, SSH, or actual servers.
+This is a **standalone demo version** of Ekumen, configured with a simulated backend. It does not require Ansible installed and does not execute any real commands.
 
-## Features
+> **[Live Demo](https://ekumen.aydin.cloud)**
 
-- **Simulated Execution**: Commands return realistic dummy output.
-- **In-Memory History**: Changes persist in browser localStorage.
-- **Safe Sandbox**: No actual side effects on the host system.
+## Purpose
 
-## Deployment
+The purpose of this demo is to allow users to explore the Ekumen interface and functionality without setting up an Ansible environment.
 
-Deploying this demo is simple. It only requires Python and Flask.
+## Features (Simulated)
 
-### 1. Requirements
+- **Mock Execution**: All Ansible commands are simulated with realistic delays and output.
+- **Fail Scenarios**: Type "error" or "fail" in the inventory to simulate a connection failure.
+- **Pre-loaded Playbooks**: Includes sample playbooks to demonstrate the library feature.
+- **Safe**: Since no commands are actually executed, it is safe to run anywhere.
 
-- Python 3.8+
-- Flask (`pip install flask`)
+## Running the Demo
 
-### 2. Run Locally
+1. Install requirements:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash
-# Install dependencies
-pip install flask
+2. Run the application:
+   ```bash
+   python app.py
+   ```
 
-# Start the server
-python app.py
-```
+3. Access at `http://localhost:5005`
 
-The app will be available at `http://localhost:5000`.
+## Configuration
 
-### 3. Deploy to Render / Railway / Heroku
+The demo runs on port **5005** by default to avoid conflicts with the main application. You can change this in `config.py`.
 
-This directory is ready for cloud deployment.
-- `requirements.txt` is present.
-- `app.py` exposes the Flask app.
-- Port is configurable via `PORT` environment variable.
+## About Ekumen
 
-**Example Command:**
-```bash
-gunicorn app:app
-```
+For the full version, see the main repository or the parent directory.

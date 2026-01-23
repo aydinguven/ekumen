@@ -13,7 +13,7 @@ class Config:
     # Flask settings
     DEBUG = os.environ.get('ANSIBLE_SHUTTLE_DEBUG', 'false').lower() == 'true'
     HOST = os.environ.get('ANSIBLE_SHUTTLE_HOST', '0.0.0.0')
-    PORT = int(os.environ.get('ANSIBLE_SHUTTLE_PORT', 5000))
+    PORT = int(os.environ.get('ANSIBLE_SHUTTLE_PORT', 5005))
     
     # Security settings
     SECRET_KEY = os.environ.get('ANSIBLE_SHUTTLE_SECRET_KEY', os.urandom(24).hex())
