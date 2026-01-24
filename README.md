@@ -129,7 +129,13 @@ Access the web interface at `http://localhost:5000`
 - ~~**Command History**: Local history of executed commands~~ ✅ *Added in v1.3.0*
 - ~~**Syntax Highlighting**: Code editor for YAML/Playbooks~~ ✅ *Added in v1.3.0*
 - **Host Limiting**: Add --limit support (requires inventory files)
-- **PAM Integration**: Support for Kron PAM and others
+- **Containerization**: Docker/Podman builds
+- **Inventory Management**: Option to save/use inventories
+
+## Maybe?
+- **Role/Collection Manager**: UI to run ansible-galaxy install to fetch roles/collections directly
+- **PAM Integration**: Support for PAM Integrations
+
 
 ## License
 
