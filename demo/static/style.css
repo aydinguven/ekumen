@@ -405,8 +405,9 @@ body {
 .history-sidebar {
     position: fixed;
     left: 0;
-    top: 0;
-    height: 100vh;
+    top: 50px;
+    /* Offset for demo banner */
+    height: calc(100vh - 50px);
     width: 300px;
     background: var(--bg-secondary);
     border-right: 1px solid var(--border-color);
@@ -1150,8 +1151,9 @@ textarea {
 .right-sidebar {
     position: fixed;
     right: 0;
-    top: 0;
-    height: 100vh;
+    top: 50px;
+    /* Offset for demo banner */
+    height: calc(100vh - 50px);
     width: 280px;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border-color);
