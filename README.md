@@ -63,12 +63,12 @@ The service will start automatically on port 5000.
 
 To install on a server without internet access using the bundled wheels:
 
-1. Download the latest release from another machine: [ekumen-v1.5.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.5.0.tar.gz)
+1. Download the latest release from another machine: [ekumen-v1.5.4.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.5.4.tar.gz)
 2. Transfer the file to your server.
 3. Run the installer:
 ```bash
-tar -xzf ekumen-v1.5.0.tar.gz
-cd ekumen-v1.5.0
+tar -xzf ekumen-v1.5.4.tar.gz
+cd ekumen-v1.5.4
 sudo ./install-offline.sh
 ```
 
