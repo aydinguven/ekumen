@@ -1111,12 +1111,10 @@ textarea {
     border-color: var(--accent-primary);
 }
 
-/* ========== RIGHT SIDEBAR ========== */
-.right-sidebar {
+/* ========== RIGHT SIDEBAR PANELS (Split) ========== */
+.right-sidebar-panel {
     position: fixed;
     right: 0;
-    top: 0;
-    height: 100vh;
     width: 280px;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border-color);
@@ -1127,33 +1125,53 @@ textarea {
     box-shadow: var(--shadow-lg);
 }
 
-.right-sidebar.collapsed {
+.right-sidebar-top {
+    top: 0;
+    height: 50vh;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.right-sidebar-bottom {
+    top: 50vh;
+    height: 50vh;
+}
+
+.right-sidebar-panel.collapsed {
     transform: translateX(100%);
 }
 
-.right-sidebar-expand-btn {
+/* Right Expand Buttons */
+.right-expand-btn {
     position: fixed;
     right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 12px 8px;
-    font-size: 1.2rem;
+    padding: 10px 8px;
+    font-size: 1.1rem;
     cursor: pointer;
     z-index: 100;
     transition: all var(--transition);
     box-shadow: var(--shadow);
 }
 
-.right-sidebar-expand-btn:hover {
+.right-expand-btn:hover {
     background: var(--accent-primary);
     border-color: var(--accent-primary);
 }
 
-.right-sidebar-expand-btn.hidden {
+.right-expand-btn.hidden {
     display: none;
+}
+
+.right-expand-top {
+    top: 25vh;
+    transform: translateY(-50%);
+}
+
+.right-expand-bottom {
+    top: 75vh;
+    transform: translateY(-50%);
 }
 
 /* Sidebar Sections */

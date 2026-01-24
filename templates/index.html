@@ -247,41 +247,45 @@ webserver.example.com"></textarea>
             </section>
         </div>
 
-        <!-- Right Sidebar -->
-        <aside id="right-sidebar" class="right-sidebar">
+        <!-- Right Sidebar - Inventories (Top Half) -->
+        <aside id="inventory-sidebar" class="right-sidebar-panel right-sidebar-top">
             <div class="sidebar-header">
-                <h3>📦 Resources</h3>
-                <button class="sidebar-toggle" onclick="toggleRightSidebar()" title="Collapse">▶</button>
+                <h3>📋 Inventories</h3>
+                <button class="sidebar-toggle" onclick="toggleInventorySidebar()" title="Collapse">▶</button>
             </div>
             <div class="sidebar-content">
-                <!-- Inventories Section -->
-                <div class="sidebar-section">
-                    <div class="sidebar-section-header">
-                        <h4>📋 Inventories</h4>
-                        <button class="sidebar-action-btn" onclick="showNewInventoryModal()"
-                            title="New Inventory">+</button>
-                    </div>
-                    <div id="inventory-list" class="resource-list">
-                        <!-- Populated by JS -->
-                    </div>
+                <div class="sidebar-section-header">
+                    <span></span>
+                    <button class="sidebar-action-btn" onclick="showNewInventoryModal()"
+                        title="New Inventory">+</button>
                 </div>
-
-                <!-- Collections/Roles Section (Placeholder) -->
-                <div class="sidebar-section">
-                    <div class="sidebar-section-header">
-                        <h4>🎭 Collections</h4>
-                    </div>
-                    <div class="resource-list">
-                        <p class="sidebar-placeholder">Coming soon...</p>
-                    </div>
+                <div id="inventory-list" class="resource-list">
+                    <!-- Populated by JS -->
                 </div>
             </div>
         </aside>
 
-        <!-- Right Sidebar Expand Button -->
-        <button id="right-sidebar-expand-btn" class="right-sidebar-expand-btn hidden" onclick="toggleRightSidebar()"
-            title="Show Resources">
-            📦
+        <!-- Right Sidebar - Collections (Bottom Half) -->
+        <aside id="collections-sidebar" class="right-sidebar-panel right-sidebar-bottom">
+            <div class="sidebar-header">
+                <h3>🎭 Collections</h3>
+                <button class="sidebar-toggle" onclick="toggleCollectionsSidebar()" title="Collapse">▶</button>
+            </div>
+            <div class="sidebar-content">
+                <div id="collections-list" class="resource-list">
+                    <p class="sidebar-placeholder">Coming soon...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Sidebar Expand Buttons -->
+        <button id="inventory-expand-btn" class="right-expand-btn right-expand-top hidden"
+            onclick="toggleInventorySidebar()" title="Show Inventories">
+            📋
+        </button>
+        <button id="collections-expand-btn" class="right-expand-btn right-expand-bottom hidden"
+            onclick="toggleCollectionsSidebar()" title="Show Collections">
+            🎭
         </button>
     </div> <!-- end app-wrapper -->
 

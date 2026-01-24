@@ -529,23 +529,41 @@ async function runAnsible() {
 // ========== RIGHT SIDEBAR & INVENTORY MANAGEMENT ==========
 let currentEditingInventory = null;
 
-function toggleRightSidebar() {
-    const sidebar = document.getElementById('right-sidebar');
-    const expandBtn = document.getElementById('right-sidebar-expand-btn');
+function toggleInventorySidebar() {
+    const sidebar = document.getElementById('inventory-sidebar');
+    const expandBtn = document.getElementById('inventory-expand-btn');
 
     sidebar.classList.toggle('collapsed');
     const isCollapsed = sidebar.classList.contains('collapsed');
 
     expandBtn.classList.toggle('hidden', !isCollapsed);
-    localStorage.setItem('right_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+    localStorage.setItem('inventory_sidebar_collapsed', isCollapsed ? 'true' : 'false');
 }
 
-// Initialize Right Sidebar state
+function toggleCollectionsSidebar() {
+    const sidebar = document.getElementById('collections-sidebar');
+    const expandBtn = document.getElementById('collections-expand-btn');
+
+    sidebar.classList.toggle('collapsed');
+    const isCollapsed = sidebar.classList.contains('collapsed');
+
+    expandBtn.classList.toggle('hidden', !isCollapsed);
+    localStorage.setItem('collections_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+}
+
+// Initialize Right Sidebar states
 document.addEventListener('DOMContentLoaded', () => {
-    const rightSidebarCollapsed = localStorage.getItem('right_sidebar_collapsed') === 'true';
-    if (rightSidebarCollapsed) {
-        document.getElementById('right-sidebar').classList.add('collapsed');
-        document.getElementById('right-sidebar-expand-btn').classList.remove('hidden');
+    // Inventory sidebar
+    const inventoryCollapsed = localStorage.getItem('inventory_sidebar_collapsed') === 'true';
+    if (inventoryCollapsed) {
+        document.getElementById('inventory-sidebar').classList.add('collapsed');
+        document.getElementById('inventory-expand-btn').classList.remove('hidden');
+    }
+    // Collections sidebar
+    const collectionsCollapsed = localStorage.getItem('collections_sidebar_collapsed') === 'true';
+    if (collectionsCollapsed) {
+        document.getElementById('collections-sidebar').classList.add('collapsed');
+        document.getElementById('collections-expand-btn').classList.remove('hidden');
     }
     // Load inventories on page load
     loadInventoryList();
