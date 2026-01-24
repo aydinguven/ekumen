@@ -246,7 +246,74 @@ webserver.example.com"></textarea>
                 <pre id="output-content"></pre>
             </section>
         </div>
+
+        <!-- Right Sidebar -->
+        <aside id="right-sidebar" class="right-sidebar">
+            <div class="sidebar-header">
+                <h3>📦 Resources</h3>
+                <button class="sidebar-toggle" onclick="toggleRightSidebar()" title="Collapse">▶</button>
+            </div>
+            <div class="sidebar-content">
+                <!-- Inventories Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-header">
+                        <h4>📋 Inventories</h4>
+                        <button class="sidebar-action-btn" onclick="showNewInventoryModal()"
+                            title="New Inventory">+</button>
+                    </div>
+                    <div id="inventory-list" class="resource-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Collections/Roles Section (Placeholder) -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-header">
+                        <h4>🎭 Collections</h4>
+                    </div>
+                    <div class="resource-list">
+                        <p class="sidebar-placeholder">Coming soon...</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Sidebar Expand Button -->
+        <button id="right-sidebar-expand-btn" class="right-sidebar-expand-btn hidden" onclick="toggleRightSidebar()"
+            title="Show Resources">
+            📦
+        </button>
     </div> <!-- end app-wrapper -->
+
+    <!-- New Inventory Modal -->
+    <div id="inventory-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="hideInventoryModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="inventory-modal-title">New Inventory</h3>
+                <button class="modal-close" onclick="hideInventoryModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="inventory-name-input">Name</label>
+                    <input type="text" id="inventory-name-input" placeholder="e.g., Production, Staging">
+                </div>
+                <div class="form-group">
+                    <label for="inventory-content-input">Hosts (INI format)</label>
+                    <textarea id="inventory-content-input" rows="10" placeholder="[webservers]
+192.168.1.10
+192.168.1.11
+
+[database]
+db.example.com"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="hideInventoryModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveNewInventory()">💾 Save</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="footer">
         <p>Ekumen v{{ version }} • Built by Aydin Aslangoren</p>

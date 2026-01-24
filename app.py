@@ -5,12 +5,14 @@ A Flask-based single-page app for running Ansible playbooks and ad-hoc commands.
 
 from flask import Flask, render_template, request, jsonify, Response
 from ansible_runner import AnsibleRunner
+from inventory_manager import InventoryManager
 from config import Config
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
 
 runner = AnsibleRunner()
+inventory_manager = InventoryManager(Config.INVENTORY_DIR)
 
 # Store last output for download (simple in-memory cache)
 last_output = {'content': '', 'timestamp': None}
@@ -152,6 +154,46 @@ def delete_playbook(name):
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ========== INVENTORY LIBRARY ==========
+
+@app.route('/inventories', methods=['GET'])
+def list_inventories():
+    """List all saved inventories."""
+    inventories = inventory_manager.list_inventories()
+    return jsonify({'inventories': inventories})
+
+
+@app.route('/inventories/<name>', methods=['GET'])
+def get_inventory(name):
+    """Get inventory content by name."""
+    success, result = inventory_manager.get_inventory(name)
+    if not success:
+        return jsonify({'success': False, 'error': result}), 404
+    return jsonify({'success': True, 'name': name, 'content': result})
+
+
+@app.route('/inventories', methods=['POST'])
+def save_inventory():
+    """Save a new inventory."""
+    data = request.get_json()
+    if not data or 'name' not in data or 'content' not in data:
+        return jsonify({'success': False, 'error': 'Name and content required'}), 400
+
+    success, result = inventory_manager.save_inventory(data['name'], data['content'])
+    if not success:
+        return jsonify({'success': False, 'error': result}), 500
+    return jsonify({'success': True, 'name': result})
+
+
+@app.route('/inventories/<name>', methods=['DELETE'])
+def delete_inventory(name):
+    """Delete an inventory."""
+    success, error = inventory_manager.delete_inventory(name)
+    if not success:
+        return jsonify({'success': False, 'error': error}), 404
+    return jsonify({'success': True})
 
 
 if __name__ == '__main__':

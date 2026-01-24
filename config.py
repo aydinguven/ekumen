@@ -28,3 +28,6 @@ class Config:
     
     # Playbook Library
     PLAYBOOK_DIR = os.environ.get('ANSIBLE_SHUTTLE_PLAYBOOK_DIR', '/opt/ekumen/playbooks')
+
+    # Inventory Library
+    INVENTORY_DIR = os.environ.get('ANSIBLE_SHUTTLE_INVENTORY_DIR', '/opt/ekumen/inventories')
