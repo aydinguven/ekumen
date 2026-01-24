@@ -223,10 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateColorIcon(savedColor);
 
-    // History Sidebar
+    // History Sidebar - default to collapsed
     renderHistory();
-    const sidebarCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-    if (sidebarCollapsed) {
+    const sidebarCollapsed = localStorage.getItem('sidebar_collapsed');
+    if (sidebarCollapsed !== 'false') {
         document.getElementById('history-sidebar').classList.add('collapsed');
         document.getElementById('sidebar-expand-btn').classList.remove('hidden');
     }
@@ -525,3 +525,179 @@ async function runAnsible() {
         runBtn.innerHTML = '<span class="icon">▶️</span> Run';
     }
 }
+
+// ========== RIGHT SIDEBAR & INVENTORY MANAGEMENT ==========
+let currentEditingInventory = null;
+
+function toggleInventorySidebar() {
+    const sidebar = document.getElementById('inventory-sidebar');
+    const expandBtn = document.getElementById('inventory-expand-btn');
+
+    sidebar.classList.toggle('collapsed');
+    const isCollapsed = sidebar.classList.contains('collapsed');
+
+    expandBtn.classList.toggle('hidden', !isCollapsed);
+    localStorage.setItem('inventory_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+}
+
+function toggleCollectionsSidebar() {
+    const sidebar = document.getElementById('collections-sidebar');
+    const expandBtn = document.getElementById('collections-expand-btn');
+
+    sidebar.classList.toggle('collapsed');
+    const isCollapsed = sidebar.classList.contains('collapsed');
+
+    expandBtn.classList.toggle('hidden', !isCollapsed);
+    localStorage.setItem('collections_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+}
+
+// Initialize Right Sidebar states - default to collapsed
+document.addEventListener('DOMContentLoaded', () => {
+    // Inventory sidebar - default collapsed
+    const inventoryCollapsed = localStorage.getItem('inventory_sidebar_collapsed');
+    if (inventoryCollapsed !== 'false') {
+        document.getElementById('inventory-sidebar').classList.add('collapsed');
+        document.getElementById('inventory-expand-btn').classList.remove('hidden');
+    }
+    // Collections sidebar - default collapsed
+    const collectionsCollapsed = localStorage.getItem('collections_sidebar_collapsed');
+    if (collectionsCollapsed !== 'false') {
+        document.getElementById('collections-sidebar').classList.add('collapsed');
+        document.getElementById('collections-expand-btn').classList.remove('hidden');
+    }
+    // Load inventories on page load
+    loadInventoryList();
+});
+
+async function loadInventoryList() {
+    const listEl = document.getElementById('inventory-list');
+    try {
+        const response = await fetch('/inventories');
+        const data = await response.json();
+
+        if (!data.inventories || data.inventories.length === 0) {
+            listEl.innerHTML = '<p class="sidebar-empty">No inventories saved yet.</p>';
+            return;
+        }
+
+        listEl.innerHTML = data.inventories.map(name => `
+            <div class="resource-item" onclick="loadInventoryToForm('${escapeHtml(name)}')">
+                <span class="resource-item-name">${escapeHtml(name.replace('.ini', ''))}</span>
+                <div class="resource-item-actions">
+                    <button class="resource-item-btn" onclick="editInventory('${escapeHtml(name)}', event)" title="Edit">✏️</button>
+                    <button class="resource-item-btn delete" onclick="deleteInventory('${escapeHtml(name)}', event)" title="Delete">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load inventory list:', error);
+        listEl.innerHTML = '<p class="sidebar-empty">Error loading inventories.</p>';
+    }
+}
+
+async function loadInventoryToForm(name) {
+    try {
+        const response = await fetch(`/inventories/${encodeURIComponent(name)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('inventory').value = data.content;
+            showToast(`Loaded: ${name.replace('.ini', '')}`, 'success');
+        } else {
+            showToast('Failed to load: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showToast('Failed to load: ' + error.message, 'error');
+    }
+}
+
+function showNewInventoryModal() {
+    currentEditingInventory = null;
+    document.getElementById('inventory-modal-title').textContent = 'New Inventory';
+    document.getElementById('inventory-name-input').value = '';
+    document.getElementById('inventory-content-input').value = '';
+    document.getElementById('inventory-modal').classList.remove('hidden');
+}
+
+function hideInventoryModal() {
+    document.getElementById('inventory-modal').classList.add('hidden');
+    currentEditingInventory = null;
+}
+
+async function editInventory(name, event) {
+    event.stopPropagation();
+    try {
+        const response = await fetch(`/inventories/${encodeURIComponent(name)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            currentEditingInventory = name;
+            document.getElementById('inventory-modal-title').textContent = 'Edit Inventory';
+            document.getElementById('inventory-name-input').value = name.replace('.ini', '');
+            document.getElementById('inventory-content-input').value = data.content;
+            document.getElementById('inventory-modal').classList.remove('hidden');
+        } else {
+            showToast('Failed to load: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showToast('Failed to load: ' + error.message, 'error');
+    }
+}
+
+async function saveNewInventory() {
+    const name = document.getElementById('inventory-name-input').value.trim();
+    const content = document.getElementById('inventory-content-input').value;
+
+    if (!name) {
+        showToast('Name is required', 'error');
+        return;
+    }
+
+    if (!content.trim()) {
+        showToast('Content is required', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/inventories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, content })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            hideInventoryModal();
+            loadInventoryList();
+            showToast(`Saved: ${data.name}`, 'success');
+        } else {
+            showToast('Failed to save: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showToast('Failed to save: ' + error.message, 'error');
+    }
+}
+
+async function deleteInventory(name, event) {
+    event.stopPropagation();
+    if (!confirm(`Delete inventory "${name.replace('.ini', '')}"?`)) return;
+
+    try {
+        const response = await fetch(`/inventories/${encodeURIComponent(name)}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            loadInventoryList();
+            showToast('Inventory deleted', 'success');
+        } else {
+            showToast('Failed to delete: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showToast('Failed to delete: ' + error.message, 'error');
+    }
+}
+

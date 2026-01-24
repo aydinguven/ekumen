@@ -36,8 +36,11 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 
 - **Ad-hoc Commands** — Run quick Ansible modules against your hosts
 - **Playbook Execution** — Execute full YAML playbooks from the browser
+- **Playbook Library** — Save and load playbooks from server storage
+- **Inventory Management** — Save and reuse inventories from the sidebar
 - **Secure Authentication** — SSH password and privilege escalation support
 - **Output Download** — Save command outputs as text files
+- **Command History** — Browse and restore previous commands
 - **Dark Interface** — Easy on the eyes for long sessions
 
 ## Requirements
@@ -60,12 +63,12 @@ The service will start automatically on port 5000.
 
 To install on a server without internet access using the bundled wheels:
 
-1. Download the latest release from another machine: [ekumen-v1.4.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.4.0.tar.gz)
+1. Download the latest release from another machine: [ekumen-v1.5.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.5.0.tar.gz)
 2. Transfer the file to your server.
 3. Run the installer:
 ```bash
-tar -xzf ekumen-v1.4.0.tar.gz
-cd ekumen-v1.4.0
+tar -xzf ekumen-v1.5.0.tar.gz
+cd ekumen-v1.5.0
 sudo ./install-offline.sh
 ```
 
@@ -125,12 +128,12 @@ Access the web interface at `http://localhost:5000`
 ## Roadmap
 
 - ~~**Playbook Library**: Load saved playbooks from a server directory~~ ✅ *Added in v1.4.0*
+- ~~**Inventory Management**: Save and reuse inventories from sidebar~~ ✅ *Added in v1.5.0*
 - **Live Output Streaming**: Stream Ansible output using SSE/WebSockets
 - ~~**Command History**: Local history of executed commands~~ ✅ *Added in v1.3.0*
 - ~~**Syntax Highlighting**: Code editor for YAML/Playbooks~~ ✅ *Added in v1.3.0*
 - **Host Limiting**: Add --limit support (requires inventory files)
 - **Containerization**: Docker/Podman builds
-- **Inventory Management**: Option to save/use inventories
 
 ## Maybe?
 - **Role/Collection Manager**: UI to run ansible-galaxy install to fetch roles/collections directly

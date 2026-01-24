@@ -223,10 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateColorIcon(savedColor);
 
-    // History Sidebar
+    // History Sidebar - default to collapsed
     renderHistory();
-    const sidebarCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-    if (sidebarCollapsed) {
+    const sidebarCollapsed = localStorage.getItem('sidebar_collapsed');
+    if (sidebarCollapsed !== 'false') {
         document.getElementById('history-sidebar').classList.add('collapsed');
         document.getElementById('sidebar-expand-btn').classList.remove('hidden');
     }
@@ -551,17 +551,17 @@ function toggleCollectionsSidebar() {
     localStorage.setItem('collections_sidebar_collapsed', isCollapsed ? 'true' : 'false');
 }
 
-// Initialize Right Sidebar states
+// Initialize Right Sidebar states - default to collapsed
 document.addEventListener('DOMContentLoaded', () => {
-    // Inventory sidebar
-    const inventoryCollapsed = localStorage.getItem('inventory_sidebar_collapsed') === 'true';
-    if (inventoryCollapsed) {
+    // Inventory sidebar - default collapsed
+    const inventoryCollapsed = localStorage.getItem('inventory_sidebar_collapsed');
+    if (inventoryCollapsed !== 'false') {
         document.getElementById('inventory-sidebar').classList.add('collapsed');
         document.getElementById('inventory-expand-btn').classList.remove('hidden');
     }
-    // Collections sidebar
-    const collectionsCollapsed = localStorage.getItem('collections_sidebar_collapsed') === 'true';
-    if (collectionsCollapsed) {
+    // Collections sidebar - default collapsed
+    const collectionsCollapsed = localStorage.getItem('collections_sidebar_collapsed');
+    if (collectionsCollapsed !== 'false') {
         document.getElementById('collections-sidebar').classList.add('collapsed');
         document.getElementById('collections-expand-btn').classList.remove('hidden');
     }
