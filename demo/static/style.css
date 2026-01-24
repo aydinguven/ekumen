@@ -372,13 +372,7 @@ body {
     font-size: 14px;
     font-weight: 500;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-
-font-family: 'Inter',
-sans-serif;
-font-size: 14px;
-font-weight: 500;
-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    margin: -24px -24px 24px -24px;
 }
 
 .demo-banner strong {
@@ -397,60 +391,12 @@ box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     opacity: 0.85;
 }
 
-/* ========== DEMO ADJUSMENTS FOR FIXED ELEMENTS ========== */
-/* The banner is ~60px high. We need to push fixed elements down. */
-
-/* Left Sidebar */
-.history-sidebar {
-    top: 60px !important;
-    height: calc(100vh - 60px) !important;
-}
-
-.sidebar-expand-btn {
-    /* Center vertical: 50% of viewport, but shifted by half banner height effectively? 
-       Actually just keep it 50% relative to viewport is fine, or shift it slightly?
-       Let's just leave it at 50% but make sure it doesn't hit the banner if screen is small. */
-    /* top: 50% is fine */
-}
-
-/* Right Sidebar - Top Panel */
-.right-sidebar-top {
-    top: 60px !important;
-    height: calc(50vh - 30px) !important;
-    /* (100vh - 60px) / 2 */
-}
-
-/* Right Sidebar - Bottom Panel */
-.right-sidebar-bottom {
-    top: calc(50vh + 30px) !important;
-    height: calc(50vh - 30px) !important;
-}
-
-/* Right Expand Buttons */
-.right-expand-top {
-    /* top: 25vh normally. Now it should be center of top panel.
-       Top panel starts at 60px, height is 50vh-30px.
-       Center is 60px + (25vh - 15px) = 25vh + 45px. */
-    top: calc(25vh + 45px) !important;
-}
-
-.right-expand-bottom {
-    /* Bottom panel starts at 50vh + 30px.
-       Center is (50vh + 30px) + (25vh - 15px) = 75vh + 15px. */
-    top: calc(75vh + 15px) !important;
-}
-
 /* App Wrapper - Flex layout for sidebar + main */
 .app-wrapper {
     display: flex;
     flex: 1;
     min-height: calc(100vh - 48px);
     position: relative;
-    /* Ensure content doesn't go under fixed banner since we made banner relative?
-       Wait, if banner is relative, it pushes app-wrapper down. 
-       So we don't need padding-top on body.
-       BUT fixed elements (sidebars) are relative to VIEWPORT, not app-wrapper.
-       So the offsets above ARE correct. */
 }
 
 /* History Sidebar - Overlay mode */
@@ -1198,10 +1144,12 @@ textarea {
     border-color: var(--accent-primary);
 }
 
-/* ========== RIGHT SIDEBAR PANELS (Split) ========== */
-.right-sidebar-panel {
+/* ========== RIGHT SIDEBAR (Full Height) ========== */
+.right-sidebar {
     position: fixed;
     right: 0;
+    top: 0;
+    height: 100vh;
     width: 280px;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border-color);
@@ -1212,53 +1160,67 @@ textarea {
     box-shadow: var(--shadow-lg);
 }
 
-.right-sidebar-top {
-    top: 0;
-    height: 50vh;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.right-sidebar-bottom {
-    top: 50vh;
-    height: 50vh;
-}
-
-.right-sidebar-panel.collapsed {
+.right-sidebar.collapsed {
     transform: translateX(100%);
 }
 
-/* Right Expand Buttons */
-.right-expand-btn {
+.right-sidebar-expand-btn {
     position: fixed;
     right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 10px 8px;
-    font-size: 1.1rem;
+    padding: 12px 8px;
+    font-size: 1.2rem;
     cursor: pointer;
     z-index: 100;
     transition: all var(--transition);
     box-shadow: var(--shadow);
 }
 
-.right-expand-btn:hover {
+.right-sidebar-expand-btn:hover {
     background: var(--accent-primary);
     border-color: var(--accent-primary);
 }
 
-.right-expand-btn.hidden {
+.right-sidebar-expand-btn.hidden {
     display: none;
 }
 
-.right-expand-top {
-    top: 25vh;
-    transform: translateY(-50%);
+/* ========== INVENTORY ACTIONS (Inline) ========== */
+.inventory-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
 }
 
-.right-expand-bottom {
-    top: 75vh;
-    transform: translateY(-50%);
+.inventory-actions select {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.inventory-actions select:hover {
+    border-color: var(--accent-primary);
+}
+
+.btn-sm {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+}
+
+.hint-inline {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.8rem;
 }
 
 /* Sidebar Sections */

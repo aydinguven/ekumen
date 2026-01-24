@@ -438,6 +438,7 @@ async function runAnsible() {
         mode: currentMode,
         verbosity: document.getElementById('verbosity').value,
         inventory: document.getElementById('inventory').value,
+        limit: document.getElementById('limit').value.trim(), // --limit option
         username: document.getElementById('username').value,
         password: document.getElementById('password').value,
         // Default: use sudo with same credentials
@@ -526,20 +527,7 @@ async function runAnsible() {
     }
 }
 
-// ========== RIGHT SIDEBAR & INVENTORY MANAGEMENT ==========
-let currentEditingInventory = null;
-
-function toggleInventorySidebar() {
-    const sidebar = document.getElementById('inventory-sidebar');
-    const expandBtn = document.getElementById('inventory-expand-btn');
-
-    sidebar.classList.toggle('collapsed');
-    const isCollapsed = sidebar.classList.contains('collapsed');
-
-    expandBtn.classList.toggle('hidden', !isCollapsed);
-    localStorage.setItem('inventory_sidebar_collapsed', isCollapsed ? 'true' : 'false');
-}
-
+// ========== COLLECTIONS SIDEBAR ==========
 function toggleCollectionsSidebar() {
     const sidebar = document.getElementById('collections-sidebar');
     const expandBtn = document.getElementById('collections-expand-btn');
@@ -551,153 +539,107 @@ function toggleCollectionsSidebar() {
     localStorage.setItem('collections_sidebar_collapsed', isCollapsed ? 'true' : 'false');
 }
 
-// Initialize Right Sidebar states - default to collapsed
+// Initialize Collections Sidebar - default to collapsed
 document.addEventListener('DOMContentLoaded', () => {
-    // Inventory sidebar - default collapsed
-    const inventoryCollapsed = localStorage.getItem('inventory_sidebar_collapsed');
-    if (inventoryCollapsed !== 'false') {
-        document.getElementById('inventory-sidebar').classList.add('collapsed');
-        document.getElementById('inventory-expand-btn').classList.remove('hidden');
-    }
-    // Collections sidebar - default collapsed
     const collectionsCollapsed = localStorage.getItem('collections_sidebar_collapsed');
     if (collectionsCollapsed !== 'false') {
         document.getElementById('collections-sidebar').classList.add('collapsed');
         document.getElementById('collections-expand-btn').classList.remove('hidden');
     }
-    // Load inventories on page load
-    loadInventoryList();
+    // Load saved inventories dropdown
+    renderInventoryDropdown();
 });
 
-async function loadInventoryList() {
-    const listEl = document.getElementById('inventory-list');
-    try {
-        const response = await fetch('/inventories');
-        const data = await response.json();
+// ========== INVENTORY MANAGEMENT (localStorage) ==========
+const INVENTORY_KEY = 'ekumen_inventories';
+let currentSelectedInventory = null;
 
-        if (!data.inventories || data.inventories.length === 0) {
-            listEl.innerHTML = '<p class="sidebar-empty">No inventories saved yet.</p>';
-            return;
-        }
+function getInventories() {
+    const raw = localStorage.getItem(INVENTORY_KEY);
+    return raw ? JSON.parse(raw) : {};
+}
 
-        listEl.innerHTML = data.inventories.map(name => `
-            <div class="resource-item" onclick="loadInventoryToForm('${escapeHtml(name)}')">
-                <span class="resource-item-name">${escapeHtml(name.replace('.ini', ''))}</span>
-                <div class="resource-item-actions">
-                    <button class="resource-item-btn" onclick="editInventory('${escapeHtml(name)}', event)" title="Edit">✏️</button>
-                    <button class="resource-item-btn delete" onclick="deleteInventory('${escapeHtml(name)}', event)" title="Delete">🗑️</button>
-                </div>
-            </div>
-        `).join('');
-    } catch (error) {
-        console.error('Failed to load inventory list:', error);
-        listEl.innerHTML = '<p class="sidebar-empty">Error loading inventories.</p>';
+function saveInventories(inventories) {
+    localStorage.setItem(INVENTORY_KEY, JSON.stringify(inventories));
+}
+
+function renderInventoryDropdown() {
+    const select = document.getElementById('inventory-select');
+    const deleteBtn = document.getElementById('delete-inventory-btn');
+    const inventories = getInventories();
+    const names = Object.keys(inventories).sort();
+
+    // Keep first option, rebuild rest
+    select.innerHTML = '<option value="">📂 Load saved...</option>';
+    names.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+    });
+
+    // Show/hide delete button based on selection
+    if (currentSelectedInventory && inventories[currentSelectedInventory]) {
+        select.value = currentSelectedInventory;
+        deleteBtn.style.display = 'inline-block';
+    } else {
+        currentSelectedInventory = null;
+        deleteBtn.style.display = 'none';
     }
 }
 
-async function loadInventoryToForm(name) {
-    try {
-        const response = await fetch(`/inventories/${encodeURIComponent(name)}`);
-        const data = await response.json();
-
-        if (data.success) {
-            document.getElementById('inventory').value = data.content;
-            showToast(`Loaded: ${name.replace('.ini', '')}`, 'success');
-        } else {
-            showToast('Failed to load: ' + data.error, 'error');
-        }
-    } catch (error) {
-        showToast('Failed to load: ' + error.message, 'error');
-    }
-}
-
-function showNewInventoryModal() {
-    currentEditingInventory = null;
-    document.getElementById('inventory-modal-title').textContent = 'New Inventory';
-    document.getElementById('inventory-name-input').value = '';
-    document.getElementById('inventory-content-input').value = '';
-    document.getElementById('inventory-modal').classList.remove('hidden');
-}
-
-function hideInventoryModal() {
-    document.getElementById('inventory-modal').classList.add('hidden');
-    currentEditingInventory = null;
-}
-
-async function editInventory(name, event) {
-    event.stopPropagation();
-    try {
-        const response = await fetch(`/inventories/${encodeURIComponent(name)}`);
-        const data = await response.json();
-
-        if (data.success) {
-            currentEditingInventory = name;
-            document.getElementById('inventory-modal-title').textContent = 'Edit Inventory';
-            document.getElementById('inventory-name-input').value = name.replace('.ini', '');
-            document.getElementById('inventory-content-input').value = data.content;
-            document.getElementById('inventory-modal').classList.remove('hidden');
-        } else {
-            showToast('Failed to load: ' + data.error, 'error');
-        }
-    } catch (error) {
-        showToast('Failed to load: ' + error.message, 'error');
-    }
-}
-
-async function saveNewInventory() {
-    const name = document.getElementById('inventory-name-input').value.trim();
-    const content = document.getElementById('inventory-content-input').value;
+function loadInventoryFromSelect() {
+    const select = document.getElementById('inventory-select');
+    const deleteBtn = document.getElementById('delete-inventory-btn');
+    const name = select.value;
 
     if (!name) {
-        showToast('Name is required', 'error');
+        currentSelectedInventory = null;
+        deleteBtn.style.display = 'none';
         return;
     }
 
-    if (!content.trim()) {
-        showToast('Content is required', 'error');
-        return;
-    }
-
-    try {
-        const response = await fetch('/inventories', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, content })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            hideInventoryModal();
-            loadInventoryList();
-            showToast(`Saved: ${data.name}`, 'success');
-        } else {
-            showToast('Failed to save: ' + data.error, 'error');
-        }
-    } catch (error) {
-        showToast('Failed to save: ' + error.message, 'error');
+    const inventories = getInventories();
+    if (inventories[name]) {
+        document.getElementById('inventory').value = inventories[name];
+        currentSelectedInventory = name;
+        deleteBtn.style.display = 'inline-block';
+        showToast(`Loaded: ${name}`, 'success');
     }
 }
 
-async function deleteInventory(name, event) {
-    event.stopPropagation();
-    if (!confirm(`Delete inventory "${name.replace('.ini', '')}"?`)) return;
-
-    try {
-        const response = await fetch(`/inventories/${encodeURIComponent(name)}`, {
-            method: 'DELETE'
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            loadInventoryList();
-            showToast('Inventory deleted', 'success');
-        } else {
-            showToast('Failed to delete: ' + data.error, 'error');
-        }
-    } catch (error) {
-        showToast('Failed to delete: ' + error.message, 'error');
+function saveCurrentInventory() {
+    const content = document.getElementById('inventory').value.trim();
+    if (!content) {
+        showToast('Inventory is empty', 'error');
+        return;
     }
+
+    const defaultName = currentSelectedInventory || '';
+    const name = prompt('Enter inventory name:', defaultName);
+    if (!name || !name.trim()) return;
+
+    const inventories = getInventories();
+    inventories[name.trim()] = content;
+    saveInventories(inventories);
+
+    currentSelectedInventory = name.trim();
+    renderInventoryDropdown();
+    showToast(`Saved: ${name.trim()}`, 'success');
+}
+
+function deleteCurrentInventory() {
+    if (!currentSelectedInventory) return;
+    if (!confirm(`Delete inventory "${currentSelectedInventory}"?`)) return;
+
+    const inventories = getInventories();
+    delete inventories[currentSelectedInventory];
+    saveInventories(inventories);
+
+    currentSelectedInventory = null;
+    document.getElementById('inventory-select').value = '';
+    document.getElementById('delete-inventory-btn').style.display = 'none';
+    renderInventoryDropdown();
+    showToast('Inventory deleted', 'success');
 }
 

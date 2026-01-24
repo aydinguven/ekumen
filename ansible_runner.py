@@ -211,6 +211,11 @@ class AnsibleRunner:
             if username:
                 cmd.extend(['-u', username])
             
+            # Limit pattern (optional)
+            limit = data.get('limit', '').strip()
+            if limit:
+                cmd.extend(['--limit', limit])
+            
             # Privilege escalation
             become = data.get('become', True)
             become_method = data.get('become_method', 'sudo')

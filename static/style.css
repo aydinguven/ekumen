@@ -1111,10 +1111,12 @@ textarea {
     border-color: var(--accent-primary);
 }
 
-/* ========== RIGHT SIDEBAR PANELS (Split) ========== */
-.right-sidebar-panel {
+/* ========== RIGHT SIDEBAR (Full Height) ========== */
+.right-sidebar {
     position: fixed;
     right: 0;
+    top: 0;
+    height: 100vh;
     width: 280px;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border-color);
@@ -1125,53 +1127,67 @@ textarea {
     box-shadow: var(--shadow-lg);
 }
 
-.right-sidebar-top {
-    top: 0;
-    height: 50vh;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.right-sidebar-bottom {
-    top: 50vh;
-    height: 50vh;
-}
-
-.right-sidebar-panel.collapsed {
+.right-sidebar.collapsed {
     transform: translateX(100%);
 }
 
-/* Right Expand Buttons */
-.right-expand-btn {
+.right-sidebar-expand-btn {
     position: fixed;
     right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 10px 8px;
-    font-size: 1.1rem;
+    padding: 12px 8px;
+    font-size: 1.2rem;
     cursor: pointer;
     z-index: 100;
     transition: all var(--transition);
     box-shadow: var(--shadow);
 }
 
-.right-expand-btn:hover {
+.right-sidebar-expand-btn:hover {
     background: var(--accent-primary);
     border-color: var(--accent-primary);
 }
 
-.right-expand-btn.hidden {
+.right-sidebar-expand-btn.hidden {
     display: none;
 }
 
-.right-expand-top {
-    top: 25vh;
-    transform: translateY(-50%);
+/* ========== INVENTORY ACTIONS (Inline) ========== */
+.inventory-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
 }
 
-.right-expand-bottom {
-    top: 75vh;
-    transform: translateY(-50%);
+.inventory-actions select {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.inventory-actions select:hover {
+    border-color: var(--accent-primary);
+}
+
+.btn-sm {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+}
+
+.hint-inline {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.8rem;
 }
 
 /* Sidebar Sections */
