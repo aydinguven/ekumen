@@ -38,6 +38,39 @@
     --transition: 0.2s ease;
 }
 
+/* Demo Mode Banner */
+.demo-banner {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    color: white;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.4);
+    margin: -24px -24px 24px -24px;
+}
+
+.demo-banner strong {
+    font-weight: 700;
+}
+
+.demo-link {
+    color: white;
+    font-weight: 700;
+    text-decoration: underline;
+    margin-left: 8px;
+    transition: opacity 0.2s ease;
+}
+
+.demo-link:hover {
+    opacity: 0.85;
+}
+
 /* Toggle: Cosmic Purple Theme */
 [data-color-theme="purple"] {
     --bg-primary: #0f0f14;
