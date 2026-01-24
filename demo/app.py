@@ -125,6 +125,120 @@ if not os.path.exists(DEMO_PLAYBOOK_DIR):
     except Exception as e:
         print(f"Warning: Could not create demo playbooks: {e}")
 
+# ========== INVENTORY LIBRARY (Simulated) ==========
+
+# Use a local demo_inventories folder relative to this file
+DEMO_INVENTORY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'demo_inventories')
+
+# Ensure demo inventories exist
+if not os.path.exists(DEMO_INVENTORY_DIR):
+    try:
+        os.makedirs(DEMO_INVENTORY_DIR, exist_ok=True)
+        # Create a sample inventory
+        with open(os.path.join(DEMO_INVENTORY_DIR, 'production.ini'), 'w') as f:
+            f.write("""[webservers]
+192.168.1.10
+192.168.1.11
+
+[database]
+db.example.com
+192.168.1.20
+
+[all:vars]
+ansible_user=opc
+ansible_port=22
+""")
+        with open(os.path.join(DEMO_INVENTORY_DIR, 'staging.ini'), 'w') as f:
+            f.write("""[staging]
+test-web.example.com
+test-db.example.com
+""")
+    except Exception as e:
+        print(f"Warning: Could not create demo inventories: {e}")
+
+def get_inventory_dir():
+    return DEMO_INVENTORY_DIR
+
+def sanitize_inventory_name(name):
+    """Sanitize inventory name."""
+    name = re.sub(r'[/\\:*?"<>|]', '', name)
+    if not name.endswith('.ini'):
+        name += '.ini'
+    return name
+
+@app.route('/inventories', methods=['GET'])
+def list_inventories():
+    """List all saved inventories."""
+    inv_dir = get_inventory_dir()
+    if not os.path.exists(inv_dir):
+        return jsonify({'inventories': []})
+    
+    inventories = []
+    try:
+        for f in os.listdir(inv_dir):
+            if f.endswith('.ini'):
+                inventories.append(f)
+    except OSError:
+        pass
+    
+    inventories.sort()
+    return jsonify({'inventories': inventories})
+
+
+@app.route('/inventories/<name>', methods=['GET'])
+def get_inventory(name):
+    """Get inventory content by name."""
+    inv_dir = get_inventory_dir()
+    safe_name = sanitize_inventory_name(name)
+    path = os.path.join(inv_dir, safe_name)
+    
+    if not os.path.exists(path):
+        return jsonify({'success': False, 'error': 'Inventory not found'}), 404
+    
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return jsonify({'success': True, 'name': safe_name, 'content': content})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/inventories', methods=['POST'])
+def save_inventory():
+    """Save a new inventory."""
+    data = request.get_json()
+    if not data or 'name' not in data or 'content' not in data:
+        return jsonify({'success': False, 'error': 'Name and content required'}), 400
+
+    inv_dir = get_inventory_dir()
+    safe_name = sanitize_inventory_name(data['name'])
+    path = os.path.join(inv_dir, safe_name)
+    
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(data['content'])
+        return jsonify({'success': True, 'name': safe_name})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/inventories/<name>', methods=['DELETE'])
+def delete_inventory(name):
+    """Delete an inventory."""
+    inv_dir = get_inventory_dir()
+    safe_name = sanitize_inventory_name(name)
+    path = os.path.join(inv_dir, safe_name)
+    
+    if not os.path.exists(path):
+        return jsonify({'success': False, 'error': 'Inventory not found'}), 404
+    
+    try:
+        os.remove(path)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 def get_playbook_dir():
     return DEMO_PLAYBOOK_DIR
 

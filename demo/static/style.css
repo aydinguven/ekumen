@@ -354,8 +354,43 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     padding: 24px;
+    padding-top: 74px;
+    /* Account for fixed demo banner */
     display: flex;
     flex-direction: column;
+}
+
+/* Demo Mode Banner */
+.demo-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: 12px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.demo-banner strong {
+    font-weight: 700;
+}
+
+.demo-link {
+    color: #ffe066;
+    font-weight: 600;
+    text-decoration: underline;
+    margin-left: 10px;
+    transition: opacity 0.2s ease;
+}
+
+.demo-link:hover {
+    opacity: 0.85;
 }
 
 /* App Wrapper - Flex layout for sidebar + main */
