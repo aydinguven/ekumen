@@ -1,0 +1,4 @@
+# Ignore static assets
+static/** linguist-vendored
+*.css linguist-vendored
+*.js linguist-vendored
