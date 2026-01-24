@@ -129,14 +129,14 @@ Access the web interface at `http://localhost:5000`
 
 - ~~**Playbook Library**: Load saved playbooks from a server directory~~ ✅ *Added in v1.4.0*
 - ~~**Inventory Management**: Save and reuse inventories from sidebar~~ ✅ *Added in v1.5.0*
-- **Live Output Streaming**: Stream Ansible output using SSE/WebSockets
+- ~~**Host Limiting**: Add --limit support~~ ✅ *Added in v1.5.4*
 - ~~**Command History**: Local history of executed commands~~ ✅ *Added in v1.3.0*
 - ~~**Syntax Highlighting**: Code editor for YAML/Playbooks~~ ✅ *Added in v1.3.0*
-- **Host Limiting**: Add --limit support (requires inventory files)
+- **Live Output Streaming**: Stream Ansible output using SSE/WebSockets
+- **Role/Collection Manager**: UI to run ansible-galaxy install to fetch roles/collections
 - **Containerization**: Docker/Podman builds
 
 ## Maybe?
-- **Role/Collection Manager**: UI to run ansible-galaxy install to fetch roles/collections directly
 - **PAM Integration**: Support for PAM Integrations
 
 
