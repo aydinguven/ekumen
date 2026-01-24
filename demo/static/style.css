@@ -397,12 +397,60 @@ box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     opacity: 0.85;
 }
 
+/* ========== DEMO ADJUSMENTS FOR FIXED ELEMENTS ========== */
+/* The banner is ~60px high. We need to push fixed elements down. */
+
+/* Left Sidebar */
+.history-sidebar {
+    top: 60px !important;
+    height: calc(100vh - 60px) !important;
+}
+
+.sidebar-expand-btn {
+    /* Center vertical: 50% of viewport, but shifted by half banner height effectively? 
+       Actually just keep it 50% relative to viewport is fine, or shift it slightly?
+       Let's just leave it at 50% but make sure it doesn't hit the banner if screen is small. */
+    /* top: 50% is fine */
+}
+
+/* Right Sidebar - Top Panel */
+.right-sidebar-top {
+    top: 60px !important;
+    height: calc(50vh - 30px) !important;
+    /* (100vh - 60px) / 2 */
+}
+
+/* Right Sidebar - Bottom Panel */
+.right-sidebar-bottom {
+    top: calc(50vh + 30px) !important;
+    height: calc(50vh - 30px) !important;
+}
+
+/* Right Expand Buttons */
+.right-expand-top {
+    /* top: 25vh normally. Now it should be center of top panel.
+       Top panel starts at 60px, height is 50vh-30px.
+       Center is 60px + (25vh - 15px) = 25vh + 45px. */
+    top: calc(25vh + 45px) !important;
+}
+
+.right-expand-bottom {
+    /* Bottom panel starts at 50vh + 30px.
+       Center is (50vh + 30px) + (25vh - 15px) = 75vh + 15px. */
+    top: calc(75vh + 15px) !important;
+}
+
 /* App Wrapper - Flex layout for sidebar + main */
 .app-wrapper {
     display: flex;
     flex: 1;
     min-height: calc(100vh - 48px);
     position: relative;
+    /* Ensure content doesn't go under fixed banner since we made banner relative?
+       Wait, if banner is relative, it pushes app-wrapper down. 
+       So we don't need padding-top on body.
+       BUT fixed elements (sidebars) are relative to VIEWPORT, not app-wrapper.
+       So the offsets above ARE correct. */
 }
 
 /* History Sidebar - Overlay mode */
