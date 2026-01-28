@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ekumen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- CodeMirror for YAML highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/yaml/yaml.min.js"></script>
+    <!-- Fonts - local fallback for offline support -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/inter.css') }}">
+    <!-- CodeMirror for YAML highlighting - bundled locally for offline support -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/codemirror.min.css') }}">
+    <script src="{{ url_for('static', filename='vendor/codemirror.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/yaml.min.js') }}"></script>
 </head>
 
 <body>
