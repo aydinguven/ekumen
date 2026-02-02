@@ -39,6 +39,11 @@ pip install gunicorn
 # Set ownership
 chown -R "$USER_NAME:$GROUP_NAME" "$INSTALL_DIR"
 
+# Create collections and roles directories
+echo "Setting up collections and roles directories..."
+mkdir -p "$INSTALL_DIR/collections" "$INSTALL_DIR/roles"
+chown -R "$USER_NAME:$GROUP_NAME" "$INSTALL_DIR/collections" "$INSTALL_DIR/roles"
+
 # Create Systemd Service
 echo "Creating Systemd service..."
 

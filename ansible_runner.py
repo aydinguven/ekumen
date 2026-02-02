@@ -238,9 +238,12 @@ class AnsibleRunner:
             env['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
             # Fail faster on unreachable hosts
             env['ANSIBLE_SSH_ARGS'] = '-o ConnectTimeout=10 -o StrictHostKeyChecking=no'
-            # Set collection and roles paths so Ansible finds Ekumen-installed items
-            env['ANSIBLE_COLLECTIONS_PATH'] = '/opt/ekumen/collections'
-            env['ANSIBLE_ROLES_PATH'] = '/opt/ekumen/roles'
+            # Prepend Ekumen paths to system paths so Ansible finds our collections/roles
+            # Format: our_path:default_path1:default_path2
+            default_collections = '/root/.ansible/collections:/usr/share/ansible/collections'
+            default_roles = '/root/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles'
+            env['ANSIBLE_COLLECTIONS_PATH'] = f'/opt/ekumen/collections:{default_collections}'
+            env['ANSIBLE_ROLES_PATH'] = f'/opt/ekumen/roles:{default_roles}'
             
             # Verbosity
             verbosity = data.get('verbosity', '')
