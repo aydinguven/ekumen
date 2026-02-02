@@ -303,6 +303,10 @@ webserver.example.com
 
                 <!-- Actions -->
                 <div class="sidebar-actions">
+                    <button class="btn-secondary btn-small" onclick="openImportModal()"
+                        title="Import from requirements.yml">
+                        📥 Import requirements.yml
+                    </button>
                     <button class="btn-secondary btn-small" onclick="exportRequirements()"
                         title="Export as requirements.yml">
                         📤 Export requirements.yml
@@ -388,6 +392,43 @@ webserver.example.com
                     🗑️ Delete
                 </button>
                 <button class="btn-secondary" onclick="closeDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeImportModal()"></div>
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3>Import requirements.yml</h3>
+                <button class="modal-close" onclick="closeImportModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="import-content">Paste requirements.yml content:</label>
+                    <textarea id="import-content" rows="12" class="import-textarea" placeholder="---
+collections:
+  - name: community.general
+    version: &quot;8.0.0&quot;
+  - name: ansible.posix
+
+roles:
+  - name: geerlingguy.docker"></textarea>
+                </div>
+                <details class="advanced-options">
+                    <summary>⚙️ Advanced Options</summary>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="import-force">
+                        <label for="import-force">Force reinstall existing items (--force)</label>
+                    </div>
+                </details>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeImportModal()">Cancel</button>
+                <button class="run-btn" id="import-btn" onclick="performImport()">
+                    <span class="icon">📥</span> Import All
+                </button>
             </div>
         </div>
     </div>

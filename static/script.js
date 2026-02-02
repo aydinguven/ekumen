@@ -915,3 +915,67 @@ function exportRequirements() {
     showToast('Downloading requirements.yml', 'success');
 }
 
+// ========== IMPORT REQUIREMENTS ==========
+
+function openImportModal() {
+    if (!galaxyAvailable) {
+        showToast('ansible-galaxy is not installed', 'error');
+        return;
+    }
+    document.getElementById('import-modal').classList.remove('hidden');
+    document.getElementById('import-content').focus();
+}
+
+function closeImportModal() {
+    document.getElementById('import-modal').classList.add('hidden');
+    document.getElementById('import-content').value = '';
+    document.getElementById('import-force').checked = false;
+}
+
+async function performImport() {
+    const content = document.getElementById('import-content').value.trim();
+    const force = document.getElementById('import-force').checked;
+
+    if (!content) {
+        showToast('Please paste requirements.yml content', 'error');
+        return;
+    }
+
+    const importBtn = document.getElementById('import-btn');
+    importBtn.disabled = true;
+    importBtn.innerHTML = '<span class="icon">⏳</span> Importing...';
+
+    try {
+        const response = await fetch('/requirements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, force })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            const count = result.results?.length || 0;
+            showToast(`Imported ${count} item(s) successfully`, 'success');
+            closeImportModal();
+            loadCollectionsAndRoles();
+        } else {
+            // Show partial results
+            const succeeded = result.results?.filter(r => r.success).length || 0;
+            const failed = result.results?.filter(r => !r.success).length || 0;
+
+            if (succeeded > 0) {
+                showToast(`Imported ${succeeded} item(s), ${failed} failed`, 'error');
+                loadCollectionsAndRoles();
+            } else {
+                showToast(`Import failed: ${result.error}`, 'error');
+            }
+        }
+    } catch (error) {
+        showToast(`Error: ${error.message}`, 'error');
+    } finally {
+        importBtn.disabled = false;
+        importBtn.innerHTML = '<span class="icon">📥</span> Import All';
+    }
+}
+

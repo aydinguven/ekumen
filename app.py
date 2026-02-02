@@ -294,7 +294,7 @@ def delete_role(name):
     return jsonify(result), status_code
 
 
-# ========== REQUIREMENTS EXPORT ==========
+# ========== REQUIREMENTS EXPORT/IMPORT ==========
 
 @app.route('/requirements', methods=['GET'])
 def export_requirements():
@@ -305,6 +305,20 @@ def export_requirements():
         mimetype='text/yaml',
         headers={'Content-Disposition': 'attachment; filename="requirements.yml"'}
     )
+
+
+@app.route('/requirements', methods=['POST'])
+def import_requirements():
+    """Import and install from requirements.yml content."""
+    data = request.get_json()
+    if not data or 'content' not in data:
+        return jsonify({'success': False, 'error': 'No content provided'}), 400
+    
+    force = data.get('force', False)
+    result = collection_manager.import_requirements_yaml(data['content'], force)
+    
+    status_code = 200 if result['success'] else 500
+    return jsonify(result), status_code
 
 
 if __name__ == '__main__':

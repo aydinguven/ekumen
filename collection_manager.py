@@ -460,3 +460,93 @@ class CollectionManager:
                     lines.append(f'  - name: {r.name}')
         
         return '\n'.join(lines)
+
+    def import_requirements_yaml(self, content: str, force: bool = False) -> Dict:
+        """
+        Import and install collections and roles from requirements.yml content.
+        
+        Args:
+            content: YAML string with collections and roles to install
+            force: Force reinstall if already installed
+            
+        Returns:
+            Dict with results for each item
+        """
+        try:
+            import yaml
+            data = yaml.safe_load(content)
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Failed to parse YAML: {str(e)}',
+                'results': []
+            }
+        
+        if not data:
+            return {
+                'success': False,
+                'error': 'Empty requirements file',
+                'results': []
+            }
+        
+        results = []
+        all_success = True
+        
+        # Process collections
+        collections = data.get('collections', [])
+        for item in collections:
+            if isinstance(item, str):
+                name = item
+                version = None
+            elif isinstance(item, dict):
+                name = item.get('name', item.get('src', ''))
+                version = item.get('version')
+            else:
+                continue
+            
+            if not name:
+                continue
+                
+            result = self.install_collection(name, version, force)
+            results.append({
+                'type': 'collection',
+                'name': name,
+                'version': version,
+                'success': result['success'],
+                'error': result.get('error', '')
+            })
+            if not result['success']:
+                all_success = False
+        
+        # Process roles
+        roles = data.get('roles', [])
+        for item in roles:
+            if isinstance(item, str):
+                name = item
+                version = None
+            elif isinstance(item, dict):
+                name = item.get('name', item.get('src', ''))
+                version = item.get('version')
+            else:
+                continue
+            
+            if not name:
+                continue
+                
+            result = self.install_role(name, version, force)
+            results.append({
+                'type': 'role',
+                'name': name,
+                'version': version,
+                'success': result['success'],
+                'error': result.get('error', '')
+            })
+            if not result['success']:
+                all_success = False
+        
+        return {
+            'success': all_success,
+            'error': '' if all_success else 'Some items failed to install',
+            'results': results
+        }
+

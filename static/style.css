@@ -1696,3 +1696,17 @@ textarea {
     color: white;
     border-color: var(--accent-primary);
 }
+
+/* Import textarea */
+.import-textarea {
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.85rem;
+    resize: vertical;
+    min-height: 200px;
+}
+
+.sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
