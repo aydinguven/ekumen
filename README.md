@@ -29,6 +29,8 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 ### Command Output
 ![Command Output](screenshots/ui-output.png)
 
+### Collections & Roles
+![Collections & Roles](screenshots/collections-roles.png)
 
 
 
@@ -38,6 +40,7 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 - **Playbook Execution** — Execute full YAML playbooks from the browser
 - **Playbook Library** — Save and load playbooks from server storage
 - **Inventory Management** — Save and reuse inventories from the sidebar
+- **Collections & Roles** — Install, manage, and import/export Ansible Galaxy content
 - **Secure Authentication** — SSH password and privilege escalation support
 - **Output Download** — Save command outputs as text files
 - **Command History** — Browse and restore previous commands
@@ -63,12 +66,12 @@ The service will start automatically on port 5000.
 
 To install on a server without internet access using the bundled wheels:
 
-1. Download the latest release from another machine: [ekumen-v1.6.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.6.0.tar.gz)
+1. Download the latest release from another machine: [ekumen-v1.7.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.7.0.tar.gz)
 2. Transfer the file to your server.
 3. Run the installer:
 ```bash
-tar -xzf ekumen-v1.6.0.tar.gz
-cd ekumen-v1.6.0
+tar -xzf ekumen-v1.7.0.tar.gz
+cd ekumen-v1.7.0
 sudo ./install-offline.sh
 ```
 
