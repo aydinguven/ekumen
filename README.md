@@ -89,8 +89,37 @@ sudo systemctl daemon-reload
 sudo rm -rf /opt/ekumen
 ```
 
+## Docker / Podman
 
+### Quick Start with Docker Compose
 
+```bash
+docker-compose up -d
+```
+
+### Build and Run Manually
+
+```bash
+# Build the image
+docker build -t ekumen .
+
+# Run the container
+docker run -d \
+  --name ekumen \
+  -p 5000:5000 \
+  -v ekumen-playbooks:/opt/ekumen/playbooks \
+  -v ekumen-collections:/opt/ekumen/collections \
+  ekumen
+```
+
+### Podman (rootless)
+
+```bash
+podman build -t ekumen .
+podman run -d --name ekumen -p 5000:5000 ekumen
+```
+
+Access the interface at http://localhost:5000
 
 
 ## Configuration
@@ -137,7 +166,7 @@ Access the web interface at `http://localhost:5000`
 - ~~**Syntax Highlighting**: Code editor for YAML/Playbooks~~ ✅ *Added in v1.3.0*
 - **Live Output Streaming**: Stream Ansible output using SSE/WebSockets
 - ~~**Role/Collection Manager**: UI to run ansible-galaxy install to fetch roles/collections~~ ✅ *Added in v1.6.0*
-- **Containerization**: Docker/Podman builds
+- ~~**Containerization**: Docker/Podman builds~~ ✅ *Added in v1.7.0*
 
 ## Maybe?
 - **PAM Integration**: Support for PAM Integrations
