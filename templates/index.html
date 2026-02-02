@@ -274,8 +274,39 @@ webserver.example.com
                 <button class="sidebar-toggle" onclick="toggleCollectionsSidebar()" title="Collapse">▶</button>
             </div>
             <div class="sidebar-content">
-                <div id="collections-list" class="resource-list">
-                    <p class="sidebar-placeholder">Coming soon...</p>
+                <!-- Install Button -->
+                <button class="install-btn" onclick="openInstallModal()" title="Install collection or role">
+                    ➕ Install...
+                </button>
+
+                <!-- Collections Section -->
+                <div class="resource-section">
+                    <div class="resource-section-header" onclick="toggleResourceSection('collections')">
+                        <span>📦 COLLECTIONS (<span id="collections-count">0</span>)</span>
+                        <span id="collections-chevron" class="chevron">▼</span>
+                    </div>
+                    <div id="collections-list" class="resource-list">
+                        <p class="loading-text">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Roles Section -->
+                <div class="resource-section">
+                    <div class="resource-section-header" onclick="toggleResourceSection('roles')">
+                        <span>🎲 ROLES (<span id="roles-count">0</span>)</span>
+                        <span id="roles-chevron" class="chevron">▼</span>
+                    </div>
+                    <div id="roles-list" class="resource-list">
+                        <p class="loading-text">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="sidebar-actions">
+                    <button class="btn-secondary btn-small" onclick="exportRequirements()"
+                        title="Export as requirements.yml">
+                        📤 Export requirements.yml
+                    </button>
                 </div>
             </div>
         </aside>
@@ -292,6 +323,74 @@ webserver.example.com
         <p><a href="https://github.com/aydinguven/ekumen" target="_blank"
                 style="color: inherit; text-decoration: underline;">Source Code</a></p>
     </footer>
+
+    <!-- Install Modal -->
+    <div id="install-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeInstallModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Install Collection or Role</h3>
+                <button class="modal-close" onclick="closeInstallModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Type</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="install-type" value="collection" checked>
+                            <span>📦 Collection</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="install-type" value="role">
+                            <span>🎲 Role</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="install-name">Name</label>
+                    <input type="text" id="install-name" placeholder="e.g., community.general">
+                    <small class="hint">Use FQCN for collections (namespace.name)</small>
+                </div>
+                <div class="form-group">
+                    <label for="install-version">Version <span class="hint-inline">(optional)</span></label>
+                    <input type="text" id="install-version" placeholder="e.g., 8.0.0 (leave empty for latest)">
+                </div>
+                <details class="advanced-options">
+                    <summary>⚙️ Advanced Options</summary>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="install-force">
+                        <label for="install-force">Force reinstall (--force)</label>
+                    </div>
+                </details>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeInstallModal()">Cancel</button>
+                <button class="run-btn" id="install-btn" onclick="performInstall()">
+                    <span class="icon">📥</span> Install
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collection Detail Modal -->
+    <div id="detail-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeDetailModal()"></div>
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h3 id="detail-title">Collection Details</h3>
+                <button class="modal-close" onclick="closeDetailModal()">✕</button>
+            </div>
+            <div class="modal-body" id="detail-body">
+                <!-- Populated by JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary btn-danger" id="detail-delete-btn" onclick="deleteCurrentItem()">
+                    🗑️ Delete
+                </button>
+                <button class="btn-secondary" onclick="closeDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

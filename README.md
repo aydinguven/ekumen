@@ -63,12 +63,12 @@ The service will start automatically on port 5000.
 
 To install on a server without internet access using the bundled wheels:
 
-1. Download the latest release from another machine: [ekumen-v1.5.4.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.5.4.tar.gz)
+1. Download the latest release from another machine: [ekumen-v1.6.0.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.6.0.tar.gz)
 2. Transfer the file to your server.
 3. Run the installer:
 ```bash
-tar -xzf ekumen-v1.5.4.tar.gz
-cd ekumen-v1.5.4
+tar -xzf ekumen-v1.6.0.tar.gz
+cd ekumen-v1.6.0
 sudo ./install-offline.sh
 ```
 
@@ -133,7 +133,7 @@ Access the web interface at `http://localhost:5000`
 - ~~**Command History**: Local history of executed commands~~ ✅ *Added in v1.3.0*
 - ~~**Syntax Highlighting**: Code editor for YAML/Playbooks~~ ✅ *Added in v1.3.0*
 - **Live Output Streaming**: Stream Ansible output using SSE/WebSockets
-- **Role/Collection Manager**: UI to run ansible-galaxy install to fetch roles/collections
+- ~~**Role/Collection Manager**: UI to run ansible-galaxy install to fetch roles/collections~~ ✅ *Added in v1.6.0*
 - **Containerization**: Docker/Podman builds
 
 ## Maybe?

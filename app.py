@@ -6,6 +6,7 @@ A Flask-based single-page app for running Ansible playbooks and ad-hoc commands.
 from flask import Flask, render_template, request, jsonify, Response
 from ansible_runner import AnsibleRunner
 from inventory_manager import InventoryManager
+from collection_manager import CollectionManager
 from config import Config
 
 app = Flask(__name__)
@@ -13,6 +14,11 @@ app.config['SECRET_KEY'] = Config.SECRET_KEY
 
 runner = AnsibleRunner()
 inventory_manager = InventoryManager(Config.INVENTORY_DIR)
+collection_manager = CollectionManager(
+    collections_path=Config.COLLECTIONS_PATH,
+    roles_path=Config.ROLES_PATH,
+    timeout=Config.GALAXY_TIMEOUT
+)
 
 # Store last output for download (simple in-memory cache)
 last_output = {'content': '', 'timestamp': None}
@@ -194,6 +200,111 @@ def delete_inventory(name):
     if not success:
         return jsonify({'success': False, 'error': error}), 404
     return jsonify({'success': True})
+
+
+# ========== COLLECTIONS API ==========
+
+@app.route('/collections', methods=['GET'])
+def list_collections():
+    """List all installed collections."""
+    collections = collection_manager.list_collections()
+    return jsonify({
+        'collections': [c.to_dict() for c in collections],
+        'galaxy_available': collection_manager.galaxy_available
+    })
+
+
+@app.route('/collections/<path:fqcn>', methods=['GET'])
+def get_collection(fqcn):
+    """Get collection details by FQCN."""
+    collection = collection_manager.get_collection(fqcn)
+    if not collection:
+        return jsonify({'success': False, 'error': 'Collection not found'}), 404
+    return jsonify({'success': True, 'collection': collection.to_dict()})
+
+
+@app.route('/collections', methods=['POST'])
+def install_collection():
+    """Install a collection from Ansible Galaxy."""
+    data = request.get_json()
+    if not data or 'name' not in data:
+        return jsonify({'success': False, 'error': 'Collection name required'}), 400
+    
+    result = collection_manager.install_collection(
+        name=data['name'],
+        version=data.get('version'),
+        force=data.get('force', False)
+    )
+    
+    status_code = 200 if result['success'] else 500
+    return jsonify(result), status_code
+
+
+@app.route('/collections/<path:fqcn>', methods=['DELETE'])
+def delete_collection(fqcn):
+    """Delete an installed collection."""
+    result = collection_manager.delete_collection(fqcn)
+    status_code = 200 if result['success'] else 404
+    return jsonify(result), status_code
+
+
+# ========== ROLES API ==========
+
+@app.route('/roles', methods=['GET'])
+def list_roles():
+    """List all installed roles."""
+    roles = collection_manager.list_roles()
+    return jsonify({
+        'roles': [r.to_dict() for r in roles],
+        'galaxy_available': collection_manager.galaxy_available
+    })
+
+
+@app.route('/roles/<name>', methods=['GET'])
+def get_role(name):
+    """Get role details by name."""
+    role = collection_manager.get_role(name)
+    if not role:
+        return jsonify({'success': False, 'error': 'Role not found'}), 404
+    return jsonify({'success': True, 'role': role.to_dict()})
+
+
+@app.route('/roles', methods=['POST'])
+def install_role():
+    """Install a role from Ansible Galaxy."""
+    data = request.get_json()
+    if not data or 'name' not in data:
+        return jsonify({'success': False, 'error': 'Role name required'}), 400
+    
+    result = collection_manager.install_role(
+        name=data['name'],
+        version=data.get('version'),
+        force=data.get('force', False)
+    )
+    
+    status_code = 200 if result['success'] else 500
+    return jsonify(result), status_code
+
+
+@app.route('/roles/<name>', methods=['DELETE'])
+def delete_role(name):
+    """Delete an installed role."""
+    result = collection_manager.delete_role(name)
+    status_code = 200 if result['success'] else 404
+    return jsonify(result), status_code
+
+
+# ========== REQUIREMENTS EXPORT ==========
+
+@app.route('/requirements', methods=['GET'])
+def export_requirements():
+    """Export installed collections and roles as requirements.yml."""
+    content = collection_manager.export_requirements_yaml()
+    return Response(
+        content,
+        mimetype='text/yaml',
+        headers={'Content-Disposition': 'attachment; filename="requirements.yml"'}
+    )
 
 
 if __name__ == '__main__':
