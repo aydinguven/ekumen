@@ -115,8 +115,17 @@ docker run -d \
 ### Podman (rootless)
 
 ```bash
+# Build the image
 podman build -t ekumen .
-podman run -d --name ekumen -p 5000:5000 ekumen
+
+# Run with persistent volumes
+podman run -d \
+  --name ekumen \
+  -p 5000:5000 \
+  -v ekumen-playbooks:/opt/ekumen/playbooks:Z \
+  -v ekumen-collections:/opt/ekumen/collections:Z \
+  -v ekumen-roles:/opt/ekumen/roles:Z \
+  ekumen
 ```
 
 Access the interface at http://localhost:5000
