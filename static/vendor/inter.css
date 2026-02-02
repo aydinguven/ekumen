@@ -1,0 +1,44 @@
+/* Inter font - fallback to system fonts for offline use */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Inter'), local('Inter-Regular'),
+        local('-apple-system'), local('BlinkMacSystemFont'),
+        local('Segoe UI'), local('Roboto'), local('Helvetica Neue'),
+        local('Arial'), local('sans-serif');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: local('Inter Medium'), local('Inter-Medium'),
+        local('-apple-system'), local('BlinkMacSystemFont'),
+        local('Segoe UI'), local('Roboto'), local('Helvetica Neue'),
+        local('Arial'), local('sans-serif');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: local('Inter SemiBold'), local('Inter-SemiBold'),
+        local('-apple-system'), local('BlinkMacSystemFont'),
+        local('Segoe UI'), local('Roboto'), local('Helvetica Neue'),
+        local('Arial'), local('sans-serif');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: local('Inter Bold'), local('Inter-Bold'),
+        local('-apple-system'), local('BlinkMacSystemFont'),
+        local('Segoe UI'), local('Roboto'), local('Helvetica Neue'),
+        local('Arial'), local('sans-serif');
+}
