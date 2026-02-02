@@ -45,12 +45,12 @@ class CollectionManager:
         Initialize the Collection Manager.
         
         Args:
-            collections_path: Path to collections directory (default: ~/.ansible/collections)
-            roles_path: Path to roles directory (default: ~/.ansible/roles)
+            collections_path: Path to collections directory (default: /opt/ekumen/collections)
+            roles_path: Path to roles directory (default: /opt/ekumen/roles)
             timeout: Timeout for galaxy operations in seconds (default: 300)
         """
-        self.collections_path = collections_path or os.path.expanduser('~/.ansible/collections')
-        self.roles_path = roles_path or os.path.expanduser('~/.ansible/roles')
+        self.collections_path = collections_path or '/opt/ekumen/collections'
+        self.roles_path = roles_path or '/opt/ekumen/roles'
         self.timeout = timeout
         self.galaxy_available = shutil.which('ansible-galaxy') is not None
 

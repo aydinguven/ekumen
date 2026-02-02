@@ -8,7 +8,7 @@ import os
 class Config:
     """Application configuration loaded from environment variables."""
     
-    VERSION = "1.6.0"
+    VERSION = "1.6.1"
     
     # Flask settings
     DEBUG = os.environ.get('ANSIBLE_SHUTTLE_DEBUG', 'false').lower() == 'true'
@@ -35,10 +35,10 @@ class Config:
     # Collections Feature
     COLLECTIONS_PATH = os.environ.get(
         'EKUMEN_COLLECTIONS_PATH',
-        os.path.expanduser('~/.ansible/collections')
+        '/opt/ekumen/collections'
     )
     ROLES_PATH = os.environ.get(
         'EKUMEN_ROLES_PATH',
-        os.path.expanduser('~/.ansible/roles')
+        '/opt/ekumen/roles'
     )
     GALAXY_TIMEOUT = int(os.environ.get('EKUMEN_GALAXY_TIMEOUT', 300))
