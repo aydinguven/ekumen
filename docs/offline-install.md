@@ -5,7 +5,7 @@ Install Ekumen on a server without internet access using bundled wheels.
 ## Steps
 
 1. Download the latest release from another machine:
-   - [ekumen-v1.7.1.tar.gz](https://github.com/aydinguven/ekumen/releases/latest/download/ekumen-v1.7.1.tar.gz)
+   - [ekumen-v1.7.1.tar.gz](https://github.com/aydinguven/ekumen/archive/refs/tags/v1.7.1.tar.gz)
 
 2. Transfer the file to your server.
 
