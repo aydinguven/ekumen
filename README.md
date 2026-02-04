@@ -90,6 +90,7 @@ sudo rm -rf /opt/ekumen
 | Host Limiting | v1.5.4 | Target specific hosts with `--limit` |
 | Collections & Roles | v1.6.0 | Install/manage Ansible Galaxy content |
 | Containerization | v1.7.0 | Docker/Podman support |
+| GitHub Actions CI/CD | v1.7.2 | Auto-build container images on release |
 
 ### Planned
 
