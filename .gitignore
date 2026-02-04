@@ -32,3 +32,4 @@ Thumbs.db
 # Example playbooks (user-specific)
 *.yml
 !example_playbook.yml
+!.github/**/*.yml
