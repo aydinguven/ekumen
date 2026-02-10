@@ -9,13 +9,20 @@ INSTALL_DIR="${EKUMEN_INSTALL_DIR:-/opt/ekumen}"
 SERVICE_NAME="ekumen"
 USER_NAME="${SUDO_USER:-$USER}"
 GROUP_NAME=$(id -gn "$USER_NAME")
-
 # Detect existing port from systemd service, allow override via EKUMEN_PORT
 EXISTING_PORT=""
 if [ -f "/etc/systemd/system/${SERVICE_NAME}.service" ]; then
     EXISTING_PORT=$(grep -oP '(?<=--bind 0\.0\.0\.0:)\d+' /etc/systemd/system/${SERVICE_NAME}.service 2>/dev/null || true)
 fi
-PORT="${EKUMEN_PORT:-${EXISTING_PORT:-5000}}"
+DEFAULT_PORT="${EKUMEN_PORT:-${EXISTING_PORT:-5000}}"
+
+# Ask for port interactively (skip if piped/non-interactive)
+if [ -t 0 ]; then
+    read -rp "Port to run Ekumen on [$DEFAULT_PORT]: " INPUT_PORT
+    PORT="${INPUT_PORT:-$DEFAULT_PORT}"
+else
+    PORT="$DEFAULT_PORT"
+fi
 
 # Check for root/sudo
 if [ "$EUID" -ne 0 ]; then
