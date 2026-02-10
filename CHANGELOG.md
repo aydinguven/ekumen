@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.7.5 (2026-02-10)
+
+### Fixed
+- **Install script** — No longer crashes on non-git installs; backs up data dirs and re-clones.
+- **Install script** — Preserves existing port on updates instead of resetting to 5000.
+- **Install script** — Now prompts for port interactively (skipped when piped).
+
+### Cleaned Up
+- Removed duplicate files: `screenshots/` (kept `docs/screenshots/`), root `install.sh` / `install-offline.sh` (kept `scripts/`), `docker/Dockerfile` / `docker/.dockerignore` (kept root copies).
+- Updated `docker-compose.yml` to reference root Dockerfile.
+
 ## v1.7.4 (2026-02-10)
 
 ### Refactored

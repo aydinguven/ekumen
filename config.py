@@ -8,7 +8,7 @@ import os
 class Config:
     """Application configuration loaded from environment variables."""
     
-    VERSION = "1.7.4"
+    VERSION = "1.7.5"
     
     # Flask settings
     DEBUG = os.environ.get('ANSIBLE_SHUTTLE_DEBUG', 'false').lower() == 'true'
