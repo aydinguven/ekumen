@@ -13,7 +13,7 @@ docker-compose up -d
 
 ```bash
 # Build the image
-docker build -t ekumen -f docker/Dockerfile .
+docker build -t ekumen .
 
 # Run the container
 docker run -d \
@@ -28,7 +28,7 @@ docker run -d \
 
 ```bash
 # Build the image
-podman build -t ekumen -f docker/Dockerfile .
+podman build -t ekumen .
 
 # Run with persistent volumes
 podman run -d \
