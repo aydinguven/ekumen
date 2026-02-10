@@ -3,8 +3,11 @@ Ekumen - Inventory Manager
 Handles storage and retrieval of Ansible inventory files.
 """
 
+import logging
 import os
 import re
+
+logger = logging.getLogger(__name__)
 
 
 class InventoryManager:
@@ -20,7 +23,7 @@ class InventoryManager:
             try:
                 os.makedirs(self.inventory_dir, exist_ok=True)
             except OSError:
-                pass  # May fail on read-only filesystem
+                logger.warning("Could not create inventory directory: %s", self.inventory_dir)
 
     def _sanitize_name(self, name):
         """Sanitize inventory name to prevent path traversal."""
@@ -57,6 +60,7 @@ class InventoryManager:
                 content = f.read()
             return True, content
         except Exception as e:
+            logger.error("Failed to read inventory %s: %s", safe_name, e)
             return False, str(e)
 
     def save_inventory(self, name, content):
@@ -70,6 +74,7 @@ class InventoryManager:
                 f.write(content)
             return True, safe_name
         except Exception as e:
+            logger.error("Failed to save inventory %s: %s", safe_name, e)
             return False, str(e)
 
     def delete_inventory(self, name):
@@ -84,4 +89,5 @@ class InventoryManager:
             os.remove(path)
             return True, None
         except Exception as e:
+            logger.error("Failed to delete inventory %s: %s", safe_name, e)
             return False, str(e)

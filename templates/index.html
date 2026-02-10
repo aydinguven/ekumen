@@ -433,7 +433,13 @@ roles:
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Scripts: loaded in dependency order -->
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='history.js') }}"></script>
+    <script src="{{ url_for('static', filename='playbooks.js') }}"></script>
+    <script src="{{ url_for('static', filename='inventories.js') }}"></script>
+    <script src="{{ url_for('static', filename='collections.js') }}"></script>
+    <script src="{{ url_for('static', filename='runner.js') }}"></script>
 </body>
 
 </html>

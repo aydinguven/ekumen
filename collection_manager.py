@@ -3,13 +3,18 @@ Ekumen - Collection Manager Module
 Manages Ansible collections and roles via ansible-galaxy CLI.
 """
 
+import json
+import logging
 import os
 import re
-import json
 import shutil
 import subprocess
+
+import yaml
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -133,7 +138,6 @@ class CollectionManager:
         galaxy_path = os.path.join(collection_path, 'galaxy.yml')
         if os.path.exists(galaxy_path):
             try:
-                import yaml
                 with open(galaxy_path, 'r', encoding='utf-8') as f:
                     return yaml.safe_load(f) or {}
             except Exception:
@@ -188,7 +192,7 @@ class CollectionManager:
                         modules=modules
                     ))
         except OSError as e:
-            print(f"Error listing collections: {e}")
+            logger.error("Error listing collections: %s", e)
         
         # Sort by FQCN
         collections.sort(key=lambda c: c.fqcn)
@@ -221,7 +225,6 @@ class CollectionManager:
                 meta_path = os.path.join(role_path, 'meta', 'main.yml')
                 if os.path.exists(meta_path):
                     try:
-                        import yaml
                         with open(meta_path, 'r', encoding='utf-8') as f:
                             meta = yaml.safe_load(f) or {}
                             if 'galaxy_info' in meta:
@@ -235,7 +238,7 @@ class CollectionManager:
                     path=role_path
                 ))
         except OSError as e:
-            print(f"Error listing roles: {e}")
+            logger.error("Error listing roles: %s", e)
         
         # Sort by name
         roles.sort(key=lambda r: r.name)
@@ -243,7 +246,7 @@ class CollectionManager:
 
     def get_collection(self, fqcn: str) -> Optional[CollectionInfo]:
         """
-        Get details for a specific collection.
+        Get details for a specific collection via direct path lookup.
         
         Args:
             fqcn: Fully Qualified Collection Name (e.g., "community.general")
@@ -251,15 +254,41 @@ class CollectionManager:
         Returns:
             CollectionInfo or None if not found
         """
-        collections = self.list_collections()
-        for c in collections:
-            if c.fqcn == fqcn:
-                return c
-        return None
+        parts = fqcn.split('.', 1)
+        if len(parts) != 2:
+            return None
+
+        namespace, name = parts
+        base_path = self._get_collections_base_path()
+        collection_path = os.path.join(base_path, namespace, name)
+
+        if not os.path.isdir(collection_path):
+            return None
+
+        # Get version from MANIFEST.json or galaxy.yml
+        manifest = self._read_collection_manifest(collection_path)
+        version = "unknown"
+
+        if manifest and 'collection_info' in manifest:
+            version = manifest['collection_info'].get('version', 'unknown')
+        else:
+            galaxy_data = self._read_galaxy_yml(collection_path)
+            version = galaxy_data.get('version', 'unknown')
+
+        modules = self._get_collection_modules(collection_path)
+
+        return CollectionInfo(
+            namespace=namespace,
+            name=name,
+            fqcn=fqcn,
+            version=version,
+            path=collection_path,
+            modules=modules
+        )
 
     def get_role(self, name: str) -> Optional[RoleInfo]:
         """
-        Get details for a specific role.
+        Get details for a specific role via direct path lookup.
         
         Args:
             name: Role name
@@ -267,11 +296,27 @@ class CollectionManager:
         Returns:
             RoleInfo or None if not found
         """
-        roles = self.list_roles()
-        for r in roles:
-            if r.name == name:
-                return r
-        return None
+        role_path = os.path.join(self.roles_path, name)
+
+        if not os.path.isdir(role_path) or name.startswith('.'):
+            return None
+
+        version = "unknown"
+        meta_path = os.path.join(role_path, 'meta', 'main.yml')
+        if os.path.exists(meta_path):
+            try:
+                with open(meta_path, 'r', encoding='utf-8') as f:
+                    meta = yaml.safe_load(f) or {}
+                    if 'galaxy_info' in meta:
+                        version = meta['galaxy_info'].get('version', 'unknown')
+            except Exception:
+                pass
+
+        return RoleInfo(
+            name=name,
+            version=version,
+            path=role_path
+        )
 
     # ========== INSTALLATION ==========
 
@@ -473,7 +518,6 @@ class CollectionManager:
             Dict with results for each item
         """
         try:
-            import yaml
             data = yaml.safe_load(content)
         except Exception as e:
             return {

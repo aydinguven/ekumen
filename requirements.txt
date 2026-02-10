@@ -1,4 +1,4 @@
 Flask>=2.0.0
 pexpect>=4.8.0
-gunicorn
+gunicorn>=21.2.0
 PyYAML>=6.0

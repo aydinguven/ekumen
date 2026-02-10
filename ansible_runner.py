@@ -4,12 +4,15 @@ Handles execution of Ansible ad-hoc commands and playbooks using pexpect
 to manage interactive password prompts.
 """
 
+import logging
 import os
 import re
 import shutil
 import pexpect
 import shlex
 import tempfile
+
+logger = logging.getLogger(__name__)
 
 # Safe modules allowed by default (can be overridden via config)
 SAFE_MODULES = [
@@ -139,14 +142,18 @@ class AnsibleRunner:
             return success, full_output, ''
             
         except pexpect.TIMEOUT:
+            logger.warning("Command timed out")
             return False, '', 'Command timed out'
         except pexpect.EOF:
+            logger.warning("Unexpected end of output")
             return False, '', 'Unexpected end of output'
         except Exception as e:
+            logger.error("Command execution failed: %s", e)
             return False, '', str(e)
 
     def run(self, data):
         if not self.ansible_available:
+            logger.warning("Ansible is not available")
             return {
                 'success': False,
                 'output': '',
@@ -267,6 +274,7 @@ class AnsibleRunner:
             }
             
         except Exception as e:
+            logger.error("Runner error: %s", e)
             return {
                 'success': False,
                 'output': '',

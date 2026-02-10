@@ -3,17 +3,29 @@ Ekumen - Web Application
 A Flask-based single-page app for running Ansible playbooks and ad-hoc commands.
 """
 
+import datetime
+import logging
+
 from flask import Flask, render_template, request, jsonify, Response
 from ansible_runner import AnsibleRunner
 from inventory_manager import InventoryManager
+from playbook_manager import PlaybookManager
 from collection_manager import CollectionManager
 from config import Config
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG if Config.DEBUG else logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = Config.SECRET_KEY
 
 runner = AnsibleRunner()
 inventory_manager = InventoryManager(Config.INVENTORY_DIR)
+playbook_manager = PlaybookManager(Config.PLAYBOOK_DIR)
 collection_manager = CollectionManager(
     collections_path=Config.COLLECTIONS_PATH,
     roles_path=Config.ROLES_PATH,
@@ -41,10 +53,10 @@ def run_ansible():
     if not data:
         return jsonify({'success': False, 'output': '', 'error': 'Invalid request data'})
     
+    logger.info("Running %s command", data.get('mode', 'adhoc'))
     result = runner.run(data)
     
     # Store output for download
-    import datetime
     output_text = result.get('output', '')
     if result.get('error'):
         output_text += f"\n\n--- STDERR ---\n{result['error']}"
@@ -73,59 +85,22 @@ def download_output():
 
 
 # ========== PLAYBOOK LIBRARY ==========
-import os
-import re
-
-def get_playbook_dir():
-    """Get playbook directory, create if not exists."""
-    path = Config.PLAYBOOK_DIR
-    if not os.path.exists(path):
-        try:
-            os.makedirs(path, exist_ok=True)
-        except OSError:
-            pass  # May fail on read-only filesystem
-    return path
-
-def sanitize_filename(name):
-    """Sanitize filename to prevent path traversal."""
-    # Remove path separators and dangerous characters
-    name = re.sub(r'[/\\:*?"<>|]', '', name)
-    # Ensure .yml extension
-    if not name.endswith('.yml') and not name.endswith('.yaml'):
-        name += '.yml'
-    return name
 
 @app.route('/playbooks', methods=['GET'])
 def list_playbooks():
     """List all saved playbooks."""
-    playbook_dir = get_playbook_dir()
-    if not os.path.exists(playbook_dir):
-        return jsonify({'playbooks': []})
-    
-    playbooks = []
-    for f in os.listdir(playbook_dir):
-        if f.endswith('.yml') or f.endswith('.yaml'):
-            playbooks.append(f)
-    
-    playbooks.sort()
+    playbooks = playbook_manager.list_playbooks()
     return jsonify({'playbooks': playbooks})
+
 
 @app.route('/playbooks/<name>', methods=['GET'])
 def get_playbook(name):
     """Get playbook content by name."""
-    playbook_dir = get_playbook_dir()
-    safe_name = sanitize_filename(name)
-    path = os.path.join(playbook_dir, safe_name)
-    
-    if not os.path.exists(path):
-        return jsonify({'success': False, 'error': 'Playbook not found'}), 404
-    
-    try:
-        with open(path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        return jsonify({'success': True, 'name': safe_name, 'content': content})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    success, result = playbook_manager.get_playbook(name)
+    if not success:
+        return jsonify({'success': False, 'error': result}), 404
+    return jsonify({'success': True, 'name': playbook_manager._sanitize_name(name), 'content': result})
+
 
 @app.route('/playbooks', methods=['POST'])
 def save_playbook():
@@ -133,33 +108,20 @@ def save_playbook():
     data = request.get_json()
     if not data or 'name' not in data or 'content' not in data:
         return jsonify({'success': False, 'error': 'Name and content required'}), 400
-    
-    playbook_dir = get_playbook_dir()
-    safe_name = sanitize_filename(data['name'])
-    path = os.path.join(playbook_dir, safe_name)
-    
-    try:
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(data['content'])
-        return jsonify({'success': True, 'name': safe_name})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+
+    success, result = playbook_manager.save_playbook(data['name'], data['content'])
+    if not success:
+        return jsonify({'success': False, 'error': result}), 500
+    return jsonify({'success': True, 'name': result})
+
 
 @app.route('/playbooks/<name>', methods=['DELETE'])
 def delete_playbook(name):
     """Delete a playbook."""
-    playbook_dir = get_playbook_dir()
-    safe_name = sanitize_filename(name)
-    path = os.path.join(playbook_dir, safe_name)
-    
-    if not os.path.exists(path):
-        return jsonify({'success': False, 'error': 'Playbook not found'}), 404
-    
-    try:
-        os.remove(path)
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+    success, error = playbook_manager.delete_playbook(name)
+    if not success:
+        return jsonify({'success': False, 'error': error}), 404
+    return jsonify({'success': True})
 
 
 # ========== INVENTORY LIBRARY ==========
@@ -230,6 +192,7 @@ def install_collection():
     if not data or 'name' not in data:
         return jsonify({'success': False, 'error': 'Collection name required'}), 400
     
+    logger.info("Installing collection: %s", data['name'])
     result = collection_manager.install_collection(
         name=data['name'],
         version=data.get('version'),
@@ -276,6 +239,7 @@ def install_role():
     if not data or 'name' not in data:
         return jsonify({'success': False, 'error': 'Role name required'}), 400
     
+    logger.info("Installing role: %s", data['name'])
     result = collection_manager.install_role(
         name=data['name'],
         version=data.get('version'),
@@ -315,6 +279,7 @@ def import_requirements():
         return jsonify({'success': False, 'error': 'No content provided'}), 400
     
     force = data.get('force', False)
+    logger.info("Importing requirements (force=%s)", force)
     result = collection_manager.import_requirements_yaml(data['content'], force)
     
     status_code = 200 if result['success'] else 500
@@ -322,7 +287,7 @@ def import_requirements():
 
 
 if __name__ == '__main__':
-    print(f"🚀 Ekumen starting...")
-    print(f"   Debug: {Config.DEBUG}")
-    print(f"   Host: {Config.HOST}:{Config.PORT}")
+    logger.info("🚀 Ekumen starting...")
+    logger.info("   Debug: %s", Config.DEBUG)
+    logger.info("   Host: %s:%s", Config.HOST, Config.PORT)
     app.run(debug=Config.DEBUG, host=Config.HOST, port=Config.PORT)

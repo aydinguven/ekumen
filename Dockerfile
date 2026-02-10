@@ -5,7 +5,7 @@ FROM python:3.12-slim
 
 LABEL maintainer="Aydin Aslangoren"
 LABEL description="Ekumen - A simple web interface for running Ansible playbooks"
-LABEL version="1.7.0"
+LABEL version="1.7.4"
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
