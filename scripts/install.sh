@@ -10,6 +10,13 @@ SERVICE_NAME="ekumen"
 USER_NAME="${SUDO_USER:-$USER}"
 GROUP_NAME=$(id -gn "$USER_NAME")
 
+# Detect existing port from systemd service, allow override via EKUMEN_PORT
+EXISTING_PORT=""
+if [ -f "/etc/systemd/system/${SERVICE_NAME}.service" ]; then
+    EXISTING_PORT=$(grep -oP '(?<=--bind 0\.0\.0\.0:)\d+' /etc/systemd/system/${SERVICE_NAME}.service 2>/dev/null || true)
+fi
+PORT="${EKUMEN_PORT:-${EXISTING_PORT:-5000}}"
+
 # Check for root/sudo
 if [ "$EUID" -ne 0 ]; then
   echo "Please run as root or with sudo"
@@ -62,7 +69,7 @@ mkdir -p "$INSTALL_DIR/collections" "$INSTALL_DIR/roles"
 chown -R "$USER_NAME:$GROUP_NAME" "$INSTALL_DIR/collections" "$INSTALL_DIR/roles"
 
 # Create Systemd Service
-echo "Creating Systemd service..."
+echo "Creating Systemd service (port $PORT)..."
 
 cat > /etc/systemd/system/${SERVICE_NAME}.service <<EOF
 [Unit]
@@ -75,8 +82,8 @@ Group=$GROUP_NAME
 WorkingDirectory=$INSTALL_DIR
 Environment="PATH=$INSTALL_DIR/venv/bin:/usr/bin"
 Environment="ANSIBLE_SHUTTLE_HOST=0.0.0.0"
-Environment="ANSIBLE_SHUTTLE_PORT=5000"
-ExecStart=$INSTALL_DIR/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+Environment="ANSIBLE_SHUTTLE_PORT=$PORT"
+ExecStart=$INSTALL_DIR/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:$PORT app:app
 Restart=always
 
 [Install]
@@ -97,4 +104,4 @@ echo "  sudo systemctl status $SERVICE_NAME"
 echo "  sudo systemctl restart $SERVICE_NAME"
 echo "  sudo systemctl stop $SERVICE_NAME"
 echo ""
-echo "Access the interface at http://<server-ip>:5000"
+echo "Access the interface at http://<server-ip>:$PORT"
