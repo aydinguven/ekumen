@@ -18,11 +18,28 @@ fi
 
 echo "Installing Ekumen to $INSTALL_DIR..."
 
-# Clone repository
+# Clone or update repository
 if [ -d "$INSTALL_DIR" ]; then
-    echo "Directory $INSTALL_DIR exists. Updating..."
-    cd "$INSTALL_DIR"
-    git pull origin main
+    if [ -d "$INSTALL_DIR/.git" ]; then
+        echo "Directory $INSTALL_DIR exists (git). Pulling latest..."
+        cd "$INSTALL_DIR"
+        git pull origin main
+    else
+        echo "Directory $INSTALL_DIR exists (non-git). Re-cloning..."
+        # Preserve data directories
+        BACKUP_DIR=$(mktemp -d)
+        for dir in playbooks inventories collections roles; do
+            [ -d "$INSTALL_DIR/$dir" ] && cp -a "$INSTALL_DIR/$dir" "$BACKUP_DIR/"
+        done
+        rm -rf "$INSTALL_DIR"
+        git clone --depth 1 https://github.com/aydinguven/ekumen.git "$INSTALL_DIR"
+        # Restore data directories
+        for dir in playbooks inventories collections roles; do
+            [ -d "$BACKUP_DIR/$dir" ] && cp -a "$BACKUP_DIR/$dir" "$INSTALL_DIR/"
+        done
+        rm -rf "$BACKUP_DIR"
+        cd "$INSTALL_DIR"
+    fi
 else
     git clone --depth 1 https://github.com/aydinguven/ekumen.git "$INSTALL_DIR"
     cd "$INSTALL_DIR"
