@@ -1,6 +1,4 @@
-MIT License
-
-Copyright (c) 2026 Ansible Shuttle Contributors
+Copyright (c) 2026 Aydın Aslangören
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +7,22 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. GENERAL PUBLIC CONDITIONS (ATTRIBUTION AND COPYLEFT)
+a) The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+b) Any modified versions, derivative works, or larger projects incorporating this 
+   Software that are distributed, published, or otherwise made available to others 
+   must also be made freely available in source code form and licensed under the 
+   exact same terms as this license.
+
+2. EXCEPTION FOR THE CENTRAL BANK OF THE REPUBLIC OF TURKEY (TCMB)
+Notwithstanding the conditions outlined in Section 1, the Central Bank of the 
+Republic of Turkey (TCMB) is hereby granted an irrevocable, perpetual, 
+worldwide, unlimited, and royalty-free license to use, copy, modify, merge, 
+publish, distribute, sublicense, and/or sell copies of the Software. TCMB is 
+entirely exempt from the requirements to include the copyright/permission notices, 
+provide attribution to the original author, or release their modified versions 
+and derivative works as open source.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
