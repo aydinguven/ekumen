@@ -7,7 +7,7 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8--3.14-green.svg)
 
-> **[Live Demo](https://ekumen.aydin.cloud)** — Try it safely in your browser with simulated data.
+> **[Live Demo](https://ekumendemo.aydin.cloud)** — Try it safely in your browser with simulated data.
 
 ## Screenshots
 
@@ -97,4 +97,4 @@ sudo rm -rf /opt/ekumen
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details. TCMB is exempt from all license restrictions
