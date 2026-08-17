@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.8.0 (2026-08-17)
+
+### Refactored
+- **Modular Package Architecture** — Reorganized core application into an `ekumen` package using the Flask Application Factory pattern (`create_app()`) and Blueprints (`runner`, `playbooks`, `inventories`, `collections`, `web`), while keeping root entrypoints backwards-compatible.
+- **Unified Configuration** — Standardized all configuration variables to use `EKUMEN_*` prefixes with seamless fallback for legacy `ANSIBLE_SHUTTLE_*` variables.
+- **Synchronized Inventory Storage** — Connected frontend inventory management to the backend `/inventories` REST API (matching Playbooks), with automated client-side migration for legacy `localStorage` entries.
+- **Multi-Worker Output Cache** — Implemented an `OutputCache` service to safely handle file downloads across multi-process Gunicorn deployments.
+- **Security & Path Hardening** — Added path containment validation (`os.path.commonpath`) to prevent path traversal in inventory and playbook managers.
+- **Frontend Polish & ANSI Terminal Output** — Added ANSI escape sequence decoding for color-accurate terminal logs, Copy-to-Clipboard output button, and keyboard shortcuts (`Ctrl+Enter` to run, `Ctrl+S` to save).
+
+### Added
+- **Automated Test Suite** — Comprehensive `pytest` test suite with 26 unit and integration tests covering config, managers, runner validation, output cache, and API endpoints.
+
 ## v1.7.5 (2026-02-10)
 
 ### Fixed

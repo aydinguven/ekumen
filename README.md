@@ -52,12 +52,26 @@ The service starts automatically on port 5000.
 
 ## Configuration
 
-Set environment variables for production:
+Set environment variables for production (legacy `ANSIBLE_SHUTTLE_*` variables are also supported for backwards compatibility):
 
 ```bash
-export ANSIBLE_SHUTTLE_DEBUG=false
-export ANSIBLE_SHUTTLE_HOST=0.0.0.0
-export ANSIBLE_SHUTTLE_PORT=5000
+export EKUMEN_HOST=0.0.0.0
+export EKUMEN_PORT=5000
+export EKUMEN_DEBUG=false
+export EKUMEN_TIMEOUT=600
+export EKUMEN_SSH_TIMEOUT=10
+export EKUMEN_PLAYBOOK_DIR=/opt/ekumen/playbooks
+export EKUMEN_INVENTORY_DIR=/opt/ekumen/inventories
+export EKUMEN_COLLECTIONS_PATH=/opt/ekumen/collections
+export EKUMEN_ROLES_PATH=/opt/ekumen/roles
+```
+
+## Running Tests
+
+Run the automated test suite with pytest:
+
+```bash
+pytest tests/ -v
 ```
 
 ## Uninstall
@@ -90,6 +104,7 @@ sudo rm -rf /opt/ekumen
 | Host Limiting | v1.5.4 | Target specific hosts with `--limit` |
 | Collections & Roles | v1.6.0 | Install/manage Ansible Galaxy content |
 | Containerization | v1.7.0 | Docker/Podman support |
+| Modular Architecture & Test Suite | v1.8.0 | Package refactor, application factory, and pytest suite |
 
 ### Planned
 

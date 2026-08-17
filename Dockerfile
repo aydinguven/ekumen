@@ -5,13 +5,14 @@ FROM python:3.12-slim
 
 LABEL maintainer="Aydin Aslangoren"
 LABEL description="Ekumen - A simple web interface for running Ansible playbooks"
-LABEL version="1.7.5"
+LABEL version="1.8.0"
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ansible \
     openssh-client \
     sshpass \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory and collections/roles directories
@@ -29,8 +30,8 @@ COPY . .
 RUN mkdir -p /opt/ekumen/playbooks /opt/ekumen/inventories
 
 # Set environment variables
-ENV ANSIBLE_SHUTTLE_HOST=0.0.0.0
-ENV ANSIBLE_SHUTTLE_PORT=5000
+ENV EKUMEN_HOST=0.0.0.0
+ENV EKUMEN_PORT=5000
 ENV ANSIBLE_HOST_KEY_CHECKING=False
 ENV PYTHONUNBUFFERED=1
 

@@ -1,93 +1,160 @@
-/* Ekumen - Inventory Management (localStorage) */
+/* Ekumen - Inventory Management (Backend API with localStorage migration) */
 
-const INVENTORY_KEY = 'ekumen_inventories';
 let currentSelectedInventory = null;
 
-function getInventories() {
-    const raw = localStorage.getItem(INVENTORY_KEY);
-    return raw ? JSON.parse(raw) : {};
-}
+/**
+ * Migrate legacy inventories from localStorage to server on initial load.
+ */
+async function migrateLocalStorageInventories() {
+    const raw = localStorage.getItem('ekumen_inventories');
+    if (!raw) return;
 
-function saveInventories(inventories) {
-    localStorage.setItem(INVENTORY_KEY, JSON.stringify(inventories));
-}
+    try {
+        const localInventories = JSON.parse(raw);
+        const names = Object.keys(localInventories);
+        if (names.length === 0) return;
 
-function renderInventoryDropdown() {
-    const select = document.getElementById('inventory-select');
-    const deleteBtn = document.getElementById('delete-inventory-btn');
-    const inventories = getInventories();
-    const names = Object.keys(inventories).sort();
-
-    // Keep first option, rebuild rest
-    select.innerHTML = '<option value="">📂 Load saved...</option>';
-    names.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        select.appendChild(option);
-    });
-
-    // Show/hide delete button based on selection
-    if (currentSelectedInventory && inventories[currentSelectedInventory]) {
-        select.value = currentSelectedInventory;
-        deleteBtn.style.display = 'inline-block';
-    } else {
-        currentSelectedInventory = null;
-        deleteBtn.style.display = 'none';
+        for (const name of names) {
+            const content = localInventories[name];
+            if (content && typeof content === 'string') {
+                await fetch('/inventories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, content })
+                });
+            }
+        }
+        localStorage.removeItem('ekumen_inventories');
+    } catch (e) {
+        console.warn('Could not migrate legacy local inventories:', e);
     }
 }
 
-function loadInventoryFromSelect() {
+/**
+ * Fetch and render saved inventories from the server.
+ */
+async function renderInventoryDropdown() {
+    const select = document.getElementById('inventory-select');
+    const deleteBtn = document.getElementById('delete-inventory-btn');
+
+    if (!select) return;
+
+    try {
+        const response = await fetch('/inventories');
+        const data = await response.json();
+        const inventories = data.inventories || [];
+
+        select.innerHTML = '<option value="">📂 Load saved...</option>';
+        inventories.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+
+        if (currentSelectedInventory && inventories.includes(currentSelectedInventory)) {
+            select.value = currentSelectedInventory;
+            if (deleteBtn) deleteBtn.style.display = 'inline-block';
+        } else {
+            currentSelectedInventory = null;
+            if (deleteBtn) deleteBtn.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Failed to load inventories from server:', error);
+    }
+}
+
+/**
+ * Load selected inventory content from server into textarea.
+ */
+async function loadInventoryFromSelect() {
     const select = document.getElementById('inventory-select');
     const deleteBtn = document.getElementById('delete-inventory-btn');
     const name = select.value;
 
     if (!name) {
         currentSelectedInventory = null;
-        deleteBtn.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'none';
         return;
     }
 
-    const inventories = getInventories();
-    if (inventories[name]) {
-        document.getElementById('inventory').value = inventories[name];
-        currentSelectedInventory = name;
-        deleteBtn.style.display = 'inline-block';
-        showToast(`Loaded: ${name}`, 'success');
+    try {
+        const response = await fetch(`/inventories/${encodeURIComponent(name)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('inventory').value = data.content;
+            currentSelectedInventory = data.name;
+            if (deleteBtn) deleteBtn.style.display = 'inline-block';
+            showToast(`Loaded inventory: ${data.name}`, 'success');
+        } else {
+            showToast('Failed to load inventory: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showToast('Failed to load inventory: ' + error.message, 'error');
     }
 }
 
-function saveCurrentInventory() {
+/**
+ * Save current inventory textarea content to server.
+ */
+async function saveCurrentInventory() {
     const content = document.getElementById('inventory').value.trim();
     if (!content) {
         showToast('Inventory is empty', 'error');
         return;
     }
 
-    const defaultName = currentSelectedInventory || '';
+    const defaultName = currentSelectedInventory ? currentSelectedInventory.replace(/\.(ini|yaml|yml|hosts|txt)$/i, '') : '';
     const name = prompt('Enter inventory name:', defaultName);
     if (!name || !name.trim()) return;
 
-    const inventories = getInventories();
-    inventories[name.trim()] = content;
-    saveInventories(inventories);
+    try {
+        const response = await fetch('/inventories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name.trim(), content })
+        });
 
-    currentSelectedInventory = name.trim();
-    renderInventoryDropdown();
-    showToast(`Saved: ${name.trim()}`, 'success');
+        const data = await response.json();
+
+        if (data.success) {
+            currentSelectedInventory = data.name;
+            await renderInventoryDropdown();
+            showToast(`Saved inventory: ${data.name}`, 'success');
+        } else {
+            showToast('Failed to save inventory: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showToast('Failed to save inventory: ' + error.message, 'error');
+    }
 }
 
-function deleteCurrentInventory() {
+/**
+ * Delete currently selected inventory from server.
+ */
+async function deleteCurrentInventory() {
     if (!currentSelectedInventory) return;
     if (!confirm(`Delete inventory "${currentSelectedInventory}"?`)) return;
 
-    const inventories = getInventories();
-    delete inventories[currentSelectedInventory];
-    saveInventories(inventories);
+    try {
+        const response = await fetch(`/inventories/${encodeURIComponent(currentSelectedInventory)}`, {
+            method: 'DELETE'
+        });
 
-    currentSelectedInventory = null;
-    document.getElementById('inventory-select').value = '';
-    document.getElementById('delete-inventory-btn').style.display = 'none';
-    renderInventoryDropdown();
-    showToast('Inventory deleted', 'success');
+        const data = await response.json();
+
+        if (data.success) {
+            showToast(`Deleted inventory: ${currentSelectedInventory}`, 'success');
+            currentSelectedInventory = null;
+            document.getElementById('inventory-select').value = '';
+            const deleteBtn = document.getElementById('delete-inventory-btn');
+            if (deleteBtn) deleteBtn.style.display = 'none';
+            await renderInventoryDropdown();
+        } else {
+            showToast('Failed to delete inventory: ' + data.error, 'error');
+        }
+    } catch (error) {
+        showToast('Failed to delete inventory: ' + error.message, 'error');
+    }
 }

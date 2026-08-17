@@ -2,32 +2,46 @@
 
 let currentLoadedPlaybook = null;
 
+/**
+ * Load list of saved playbooks into dropdown.
+ */
 async function loadPlaybookList() {
     const select = document.getElementById('playbook-library');
+    if (!select) return;
+
     try {
         const response = await fetch('/playbooks');
         const data = await response.json();
+        const playbooks = data.playbooks || [];
 
-        // Keep first option, remove rest
         select.innerHTML = '<option value="">📂 Load...</option>';
 
-        if (data.playbooks && data.playbooks.length > 0) {
-            data.playbooks.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                select.appendChild(option);
-            });
+        playbooks.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+
+        if (currentLoadedPlaybook && playbooks.includes(currentLoadedPlaybook)) {
+            select.value = currentLoadedPlaybook;
+            const delBtn = document.getElementById('delete-playbook-btn');
+            if (delBtn) delBtn.style.display = 'inline-block';
         }
     } catch (error) {
         console.error('Failed to load playbook list:', error);
     }
 }
 
+/**
+ * Load selected playbook into editor.
+ */
 async function loadPlaybook(name) {
+    const delBtn = document.getElementById('delete-playbook-btn');
+
     if (!name) {
         currentLoadedPlaybook = null;
-        document.getElementById('delete-playbook-btn').style.display = 'none';
+        if (delBtn) delBtn.style.display = 'none';
         return;
     }
 
@@ -37,59 +51,67 @@ async function loadPlaybook(name) {
 
         if (data.success) {
             const content = data.content;
-            document.getElementById('playbook').value = content;
+            const textarea = document.getElementById('playbook');
+            if (textarea) textarea.value = content;
+
             if (playbookEditor) {
                 playbookEditor.setValue(content);
             }
             currentLoadedPlaybook = data.name;
-            document.getElementById('delete-playbook-btn').style.display = 'inline-block';
+            if (delBtn) delBtn.style.display = 'inline-block';
+            showToast(`Loaded playbook: ${data.name}`, 'success');
         } else {
-            alert('Failed to load playbook: ' + data.error);
+            showToast('Failed to load playbook: ' + data.error, 'error');
         }
     } catch (error) {
-        showToast('Failed to load: ' + error.message, 'error');
+        showToast('Failed to load playbook: ' + error.message, 'error');
     }
 }
 
+/**
+ * Save current playbook content to server.
+ */
 async function savePlaybook() {
     const content = playbookEditor ? playbookEditor.getValue() : document.getElementById('playbook').value;
 
-    if (!content.trim()) {
-        showToast('Playbook content is empty', 'error');
+    if (!content || !content.trim()) {
+        showToast('Playbook content cannot be empty', 'error');
         return;
     }
 
-    const defaultName = currentLoadedPlaybook || '';
-    const name = prompt('Enter playbook name:', defaultName.replace('.yml', '').replace('.yaml', ''));
+    const defaultName = currentLoadedPlaybook ? currentLoadedPlaybook.replace(/\.(yml|yaml)$/i, '') : '';
+    const name = prompt('Enter playbook name:', defaultName);
 
-    if (!name) return;
+    if (!name || !name.trim()) return;
 
     try {
         const response = await fetch('/playbooks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, content })
+            body: JSON.stringify({ name: name.trim(), content })
         });
 
         const data = await response.json();
 
         if (data.success) {
             currentLoadedPlaybook = data.name;
-            loadPlaybookList();
-            // Select the saved playbook
-            setTimeout(() => {
-                document.getElementById('playbook-library').value = data.name;
-                document.getElementById('delete-playbook-btn').style.display = 'inline-block';
-            }, 100);
-            showToast('Saved: ' + data.name, 'success');
+            await loadPlaybookList();
+            const select = document.getElementById('playbook-library');
+            if (select) select.value = data.name;
+            const delBtn = document.getElementById('delete-playbook-btn');
+            if (delBtn) delBtn.style.display = 'inline-block';
+            showToast(`Saved playbook: ${data.name}`, 'success');
         } else {
-            showToast('Failed to save: ' + data.error, 'error');
+            showToast('Failed to save playbook: ' + data.error, 'error');
         }
     } catch (error) {
-        showToast('Failed to save: ' + error.message, 'error');
+        showToast('Failed to save playbook: ' + error.message, 'error');
     }
 }
 
+/**
+ * Delete currently loaded playbook.
+ */
 async function deletePlaybook() {
     if (!currentLoadedPlaybook) return;
 
@@ -103,15 +125,17 @@ async function deletePlaybook() {
         const data = await response.json();
 
         if (data.success) {
+            showToast(`Deleted playbook: ${currentLoadedPlaybook}`, 'success');
             currentLoadedPlaybook = null;
-            document.getElementById('playbook-library').value = '';
-            document.getElementById('delete-playbook-btn').style.display = 'none';
-            loadPlaybookList();
-            showToast('Playbook deleted', 'success');
+            const select = document.getElementById('playbook-library');
+            if (select) select.value = '';
+            const delBtn = document.getElementById('delete-playbook-btn');
+            if (delBtn) delBtn.style.display = 'none';
+            await loadPlaybookList();
         } else {
-            showToast('Failed to delete: ' + data.error, 'error');
+            showToast('Failed to delete playbook: ' + data.error, 'error');
         }
     } catch (error) {
-        showToast('Failed to delete: ' + error.message, 'error');
+        showToast('Failed to delete playbook: ' + error.message, 'error');
     }
 }

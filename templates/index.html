@@ -258,9 +258,14 @@ webserver.example.com
             <section id="output-section" class="section hidden">
                 <div class="output-header">
                     <h2>📤 Output</h2>
-                    <button id="download-btn" class="download-btn hidden" onclick="downloadOutput()">
-                        <span class="icon">📥</span> Download
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="copy-btn" class="download-btn hidden" onclick="copyOutput()" title="Copy output">
+                            <span class="icon">📋</span> Copy
+                        </button>
+                        <button id="download-btn" class="download-btn hidden" onclick="downloadOutput()" title="Download output">
+                            <span class="icon">📥</span> Download
+                        </button>
+                    </div>
                 </div>
                 <div id="output-status" class="output-status"></div>
                 <pre id="output-content"></pre>
