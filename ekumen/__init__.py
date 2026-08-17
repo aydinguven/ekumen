@@ -12,7 +12,16 @@ from ekumen.services.inventories import InventoryManager
 from ekumen.services.playbooks import PlaybookManager
 from ekumen.services.collections import CollectionManager
 from ekumen.services.output_cache import OutputCache
-from ekumen.api import runner_bp, playbooks_bp, inventories_bp, collections_bp
+from ekumen.services.database import JobDatabase
+from ekumen.services.job_manager import JobManager
+from ekumen.api import (
+    runner_bp,
+    playbooks_bp,
+    inventories_bp,
+    collections_bp,
+    jobs_bp,
+    templates_bp
+)
 from ekumen.web import web_bp
 
 
@@ -20,7 +29,6 @@ def create_app(config_object=None) -> Flask:
     """
     Application factory for Ekumen.
     """
-    # Determine base directory (project root containing static and templates)
     pkg_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(pkg_dir)
 
@@ -61,6 +69,8 @@ def create_app(config_object=None) -> Flask:
         timeout=cfg.GALAXY_TIMEOUT
     )
     output_cache = OutputCache(cache_dir=cfg.OUTPUT_CACHE_DIR)
+    db = JobDatabase(db_path=getattr(cfg, 'DB_PATH', None))
+    job_manager = JobManager(runner=runner, db=db, output_cache=output_cache)
 
     # Store in app extensions
     app.extensions['ekumen'] = {
@@ -69,6 +79,8 @@ def create_app(config_object=None) -> Flask:
         'playbook_manager': playbook_manager,
         'collection_manager': collection_manager,
         'output_cache': output_cache,
+        'db': db,
+        'job_manager': job_manager,
     }
 
     # Register Blueprints
@@ -77,5 +89,7 @@ def create_app(config_object=None) -> Flask:
     app.register_blueprint(playbooks_bp)
     app.register_blueprint(inventories_bp)
     app.register_blueprint(collections_bp)
+    app.register_blueprint(jobs_bp)
+    app.register_blueprint(templates_bp)
 
     return app

@@ -1,16 +1,17 @@
 """
 Ekumen - Runner Service
 Handles execution of Ansible ad-hoc commands and playbooks using pexpect
-to manage interactive password prompts and security controls.
+with real-time output streaming, cancellation support, and advanced flags.
 """
 
+import json
 import logging
 import os
 import re
 import shlex
 import shutil
 import tempfile
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple, Optional, List, Callable
 
 try:
     import pexpect
@@ -29,8 +30,55 @@ DEFAULT_SAFE_MODULES = [
 ]
 
 
+def parse_play_recap(output: str) -> Dict[str, Any]:
+    """
+    Parse standard Ansible PLAY RECAP lines into structured metrics.
+    """
+    recap = {
+        'ok': 0,
+        'changed': 0,
+        'unreachable': 0,
+        'failed': 0,
+        'skipped': 0,
+        'hosts': {}
+    }
+
+    if not output:
+        return recap
+
+    # Pattern matching: host : ok=X changed=Y unreachable=Z failed=W skipped=V
+    pattern = re.compile(
+        r'^\s*([\w\.\-\:\@\[\]]+)\s*:\s*ok=(\d+)\s+changed=(\d+)\s+unreachable=(\d+)\s+failed=(\d+)(?:\s+skipped=(\d+))?',
+        re.MULTILINE
+    )
+
+    for match in pattern.finditer(output):
+        host = match.group(1).strip()
+        ok = int(match.group(2))
+        changed = int(match.group(3))
+        unreachable = int(match.group(4))
+        failed = int(match.group(5))
+        skipped = int(match.group(6)) if match.group(6) else 0
+
+        recap['hosts'][host] = {
+            'ok': ok,
+            'changed': changed,
+            'unreachable': unreachable,
+            'failed': failed,
+            'skipped': skipped
+        }
+
+        recap['ok'] += ok
+        recap['changed'] += changed
+        recap['unreachable'] += unreachable
+        recap['failed'] += failed
+        recap['skipped'] += skipped
+
+    return recap
+
+
 class AnsibleRunner:
-    """Executes Ansible ad-hoc modules and playbooks securely."""
+    """Executes Ansible ad-hoc modules and playbooks securely with streaming."""
 
     def __init__(
         self,
@@ -52,7 +100,6 @@ class AnsibleRunner:
         if not inventory_content or not inventory_content.strip():
             return False, 'Inventory is required. Please provide at least one host.'
 
-        # Basic sanity checks: ensure at least one valid host entry or group
         has_content = False
         for line in inventory_content.splitlines():
             line = line.strip()
@@ -72,7 +119,6 @@ class AnsibleRunner:
             return False, 'Module name is required.'
 
         mod = module.strip()
-        # If allowed_modules is specified, check against it
         if self.allowed_modules and mod not in self.allowed_modules:
             preview = ", ".join(self.allowed_modules[:10])
             return False, f'Module "{mod}" is not in the allowed modules list ({preview}...)'
@@ -86,11 +132,12 @@ class AnsibleRunner:
         become_password: Optional[str] = None,
         timeout: int = 600,
         cwd: Optional[str] = None,
-        env: Optional[Dict[str, str]] = None
+        env: Optional[Dict[str, str]] = None,
+        output_callback: Optional[Callable[[str], None]] = None,
+        check_cancel: Optional[Callable[[], bool]] = None
     ) -> Tuple[bool, str, str]:
         """
-        Run a command using pexpect to handle SSH and sudo password prompts.
-        Returns: (success, output, error)
+        Run a command using pexpect with real-time output callbacks and cancellation.
         """
         if pexpect is None:
             return False, "", "pexpect module is not available on this platform"
@@ -98,9 +145,6 @@ class AnsibleRunner:
         child = None
         try:
             cmd_str = ' '.join(shlex.quote(arg) for arg in cmd)
-
-            # Spawn the process in a pseudo-terminal
-            # Use /bin/bash or sh
             shell_exec = '/bin/bash' if os.path.exists('/bin/bash') else 'sh'
             child = pexpect.spawn(shell_exec, ['-c', cmd_str], timeout=timeout, cwd=cwd, env=env, encoding='utf-8')
 
@@ -108,37 +152,51 @@ class AnsibleRunner:
             ssh_password_sent = False
             become_password_sent = False
 
-            # Match patterns
             patterns = [
-                r'SSH password:',                      # 0: Ansible SSH password prompt
-                r'BECOME password',                    # 1: Ansible become password prompt  
-                r'(?i)password:',                      # 2: Generic password prompt
-                r'(?i)yes/no',                         # 3: Host key confirmation (yes/no)
-                r'\(yes/no/\[fingerprint\]\)',         # 4: Alternative host key prompt
-                r'Are you sure you want to continue',   # 5: Another host key prompt variant
-                pexpect.EOF,                           # 6: End of output
-                pexpect.TIMEOUT                        # 7: Timeout
+                r'SSH password:',
+                r'BECOME password',
+                r'(?i)password:',
+                r'(?i)yes/no',
+                r'\(yes/no/\[fingerprint\]\)',
+                r'Are you sure you want to continue',
+                pexpect.EOF,
+                pexpect.TIMEOUT
             ]
 
-            max_iterations = 50
+            max_iterations = 5000
             iteration = 0
 
             while iteration < max_iterations:
                 iteration += 1
+
+                # Check if cancellation requested
+                if check_cancel and check_cancel():
+                    if child.isalive():
+                        try:
+                            child.close(force=True)
+                        except Exception:
+                            pass
+                    cancelled_msg = "\n[Cancelled by user]\n"
+                    if output_callback:
+                        output_callback(cancelled_msg)
+                    return False, ''.join(output_buffer) + cancelled_msg, 'Execution cancelled by user'
+
                 try:
-                    index = child.expect(patterns, timeout=15)
+                    index = child.expect(patterns, timeout=1)
 
                     if child.before:
                         output_buffer.append(child.before)
+                        if output_callback:
+                            output_callback(child.before)
 
-                    if index == 0:  # SSH password prompt
+                    if index == 0:  # SSH password
                         child.sendline(password)
                         ssh_password_sent = True
-                    elif index == 1:  # BECOME password prompt
+                    elif index == 1:  # BECOME password
                         pwd = become_password if become_password else password
                         child.sendline(pwd)
                         become_password_sent = True
-                    elif index == 2:  # Generic password prompt
+                    elif index == 2:  # Generic password
                         if not ssh_password_sent:
                             child.sendline(password)
                             ssh_password_sent = True
@@ -148,14 +206,15 @@ class AnsibleRunner:
                             become_password_sent = True
                         else:
                             child.sendline(password)
-                    elif index in (3, 4, 5):  # Host key confirmation
+                    elif index in (3, 4, 5):  # Host key prompt
                         child.sendline('yes')
                     elif index == 6:  # EOF
                         break
-                    elif index == 7:  # Timeout check
+                    elif index == 7:  # Timeout tick (normal)
                         if not child.isalive():
                             break
                         continue
+
                 except pexpect.TIMEOUT:
                     if not child.isalive():
                         break
@@ -188,27 +247,34 @@ class AnsibleRunner:
                     pass
             return False, '', str(e)
 
-    def run(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def run(
+        self,
+        data: Dict[str, Any],
+        output_callback: Optional[Callable[[str], None]] = None,
+        check_cancel: Optional[Callable[[], bool]] = None
+    ) -> Dict[str, Any]:
         """
-        Execute Ansible ad-hoc command or playbook based on request payload.
+        Execute Ansible ad-hoc command or playbook with support for all advanced options.
         """
         if not self.ansible_available:
             logger.warning("Ansible binary not found")
             return {
                 'success': False,
                 'output': '',
-                'error': 'Ansible is not installed or not in PATH. Please install Ansible on the server.'
+                'error': 'Ansible is not installed or not in PATH. Please install Ansible on the server.',
+                'recap': {}
             }
 
         mode = data.get('mode', 'adhoc')
         inventory_content = str(data.get('inventory', '')).strip()
         username = str(data.get('username', '')).strip()
         password = str(data.get('password', ''))
+        private_key = str(data.get('private_key', '')).strip()
 
         # Validate inventory
         valid, inv_error = self.validate_inventory(inventory_content)
         if not valid:
-            return {'success': False, 'output': '', 'error': inv_error}
+            return {'success': False, 'output': '', 'error': inv_error, 'recap': {}}
 
         temp_dir = tempfile.mkdtemp(prefix='ekumen_run_')
 
@@ -223,7 +289,7 @@ class AnsibleRunner:
                 module = str(data.get('module', 'ping')).strip()
                 valid_mod, mod_error = self.validate_module(module)
                 if not valid_mod:
-                    return {'success': False, 'output': '', 'error': mod_error}
+                    return {'success': False, 'output': '', 'error': mod_error, 'recap': {}}
 
                 args = str(data.get('args', '')).strip()
                 cmd = ['ansible', 'all', '-i', inventory_path, '-m', module]
@@ -236,7 +302,8 @@ class AnsibleRunner:
                     return {
                         'success': False,
                         'output': '',
-                        'error': 'Playbook content is required.'
+                        'error': 'Playbook content is required.',
+                        'recap': {}
                     }
 
                 playbook_path = os.path.join(temp_dir, 'playbook.yml')
@@ -245,13 +312,57 @@ class AnsibleRunner:
 
                 cmd = ['ansible-playbook', '-i', inventory_path, playbook_path]
 
-            # Options
+            # Authentication: User & Private Key
             if username:
                 cmd.extend(['-u', username])
 
+            if private_key:
+                key_path = os.path.join(temp_dir, 'id_rsa')
+                with open(key_path, 'w', encoding='utf-8') as f:
+                    f.write(private_key.strip() + '\n')
+                try:
+                    os.chmod(key_path, 0o600)
+                except OSError:
+                    pass
+                cmd.extend(['--private-key', key_path])
+
+            # Limits and Forks
             limit = str(data.get('limit', '')).strip()
             if limit:
                 cmd.extend(['--limit', limit])
+
+            forks = data.get('forks')
+            if forks:
+                try:
+                    forks_int = int(forks)
+                    if forks_int > 0:
+                        cmd.extend(['-f', str(forks_int)])
+                except (ValueError, TypeError):
+                    pass
+
+            # Tags & Skip Tags
+            tags = str(data.get('tags', '')).strip()
+            if tags:
+                cmd.extend(['--tags', tags])
+
+            skip_tags = str(data.get('skip_tags', '')).strip()
+            if skip_tags:
+                cmd.extend(['--skip-tags', skip_tags])
+
+            # Extra Variables
+            extra_vars = data.get('extra_vars')
+            if extra_vars:
+                if isinstance(extra_vars, dict):
+                    cmd.extend(['-e', json.dumps(extra_vars)])
+                elif isinstance(extra_vars, str) and extra_vars.strip():
+                    cmd.extend(['-e', extra_vars.strip()])
+
+            # Check Mode (Dry Run) & Diff
+            if data.get('check_mode') or data.get('check'):
+                cmd.append('--check')
+
+            if data.get('diff_mode') or data.get('diff'):
+                cmd.append('--diff')
 
             # Privilege escalation
             become = bool(data.get('become', True))
@@ -280,6 +391,7 @@ class AnsibleRunner:
             # Environment variables setup
             env['ANSIBLE_HOST_KEY_CHECKING'] = 'False'
             env['ANSIBLE_SSH_ARGS'] = f'-o ConnectTimeout={self.ssh_timeout} -o StrictHostKeyChecking=no'
+            env['ANSIBLE_FORCE_COLOR'] = 'true'  # Enable ANSI color for live terminal view
 
             # Collection and Role Paths
             default_collections = '/root/.ansible/collections:/usr/share/ansible/collections'
@@ -293,13 +405,19 @@ class AnsibleRunner:
                 become_password=become_password,
                 timeout=self.command_timeout,
                 cwd=temp_dir,
-                env=env
+                env=env,
+                output_callback=output_callback,
+                check_cancel=check_cancel
             )
+
+            # Parse play recap
+            recap = parse_play_recap(output)
 
             return {
                 'success': success,
                 'output': output,
-                'error': error
+                'error': error,
+                'recap': recap
             }
 
         except Exception as e:
@@ -307,7 +425,8 @@ class AnsibleRunner:
             return {
                 'success': False,
                 'output': '',
-                'error': str(e)
+                'error': str(e),
+                'recap': {}
             }
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)

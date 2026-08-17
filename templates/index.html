@@ -24,7 +24,7 @@
             </div>
             <div class="sidebar-content">
                 <div id="history-list" class="history-list">
-                    <!-- Entries will be populated by JS -->
+                    <!-- Populated by JS from SQLite API -->
                 </div>
                 <button id="clear-history-btn" class="clear-history-btn hidden" onclick="clearHistory()">
                     🗑️ Clear All
@@ -105,6 +105,9 @@
                 <div class="section-header">
                     <h2>Playbook</h2>
                     <div class="playbook-actions">
+                        <select id="playbook-templates" onchange="loadPlaybookTemplate(this.value)" title="Insert built-in template">
+                            <option value="">📋 Templates...</option>
+                        </select>
                         <select id="playbook-library" onchange="loadPlaybook(this.value)" title="Load saved playbook">
                             <option value="">📂 Load...</option>
                         </select>
@@ -129,23 +132,35 @@
             <section class="section">
                 <h2>📦 Inventory & Options</h2>
                 <div class="form-group">
-                    <label for="inventory">Hosts (one per line or INI format)</label>
+                    <label for="inventory">Hosts (one per line or INI/YAML format)</label>
                     <div class="inventory-actions">
                         <select id="inventory-select" onchange="loadInventoryFromSelect()">
                             <option value="">📂 Load saved...</option>
                         </select>
                         <button class="btn-secondary btn-sm" onclick="saveCurrentInventory()"
                             title="Save current hosts">💾</button>
+                        <button class="btn-secondary btn-sm" id="toggle-explorer-btn" onclick="toggleInventoryExplorer()"
+                            title="Explore inventory groups & hosts">🌳 Structure</button>
                         <button class="btn-secondary btn-sm btn-danger" id="delete-inventory-btn"
                             onclick="deleteCurrentInventory()" title="Delete selected"
                             style="display: none;">🗑️</button>
                     </div>
-                    <textarea id="inventory" rows="6" placeholder="192.168.1.10
+                    <textarea id="inventory" rows="6" oninput="onInventoryChanged()" placeholder="192.168.1.10
 192.168.1.11
 webserver.example.com
 
 [webservers]
-..."></textarea>
+web1.example.com
+web2.example.com"></textarea>
+                </div>
+
+                <!-- Inventory Explorer Tree (Collapsible) -->
+                <div id="inventory-explorer" class="inventory-explorer hidden">
+                    <div class="explorer-header">
+                        <strong>🌳 Inventory Hierarchy (<span id="explorer-host-count">0</span> hosts)</strong>
+                        <button class="btn-secondary btn-sm" onclick="refreshInventoryExplorer()">🔄 Parse</button>
+                    </div>
+                    <div id="explorer-tree" class="explorer-tree"></div>
                 </div>
 
                 <div class="form-row">
@@ -247,18 +262,76 @@ webserver.example.com
                 </div>
             </section>
 
+            <!-- Advanced Execution Options (Collapsible) -->
+            <section class="section">
+                <details id="advanced-options" class="advanced-section">
+                    <summary class="advanced-summary">⚙️ Advanced Execution Options (Extra Vars, Tags, Forks, SSH Key, Check Mode)</summary>
+                    <div class="advanced-content">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="forks">Forks / Concurrency <span class="hint-inline">(-f)</span></label>
+                                <input type="number" id="forks" min="1" max="200" placeholder="Default (5)">
+                            </div>
+                            <div class="form-group flags-group">
+                                <label>Execution Flags</label>
+                                <div class="checkbox-row">
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="check-mode">
+                                        <label for="check-mode">🔍 Check / Dry Run (--check)</label>
+                                    </div>
+                                    <div class="checkbox-wrapper">
+                                        <input type="checkbox" id="diff-mode">
+                                        <label for="diff-mode">📄 Diff Mode (--diff)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="tags">Tags <span class="hint-inline">(--tags, comma-separated)</span></label>
+                                <input type="text" id="tags" placeholder="e.g., install,configure">
+                            </div>
+                            <div class="form-group">
+                                <label for="skip-tags">Skip Tags <span class="hint-inline">(--skip-tags)</span></label>
+                                <input type="text" id="skip-tags" placeholder="e.g., cleanup,reboot">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="extra-vars">Extra Variables <span class="hint-inline">(-e, YAML or JSON format)</span></label>
+                            <textarea id="extra-vars" rows="3" placeholder="http_port: 8080&#10;app_version: 1.2.0"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="private-key">SSH Private Key <span class="hint-inline">(optional file upload or paste)</span></label>
+                            <div class="key-upload-row">
+                                <input type="file" id="ssh-key-file" onchange="loadSSHKeyFromFile(event)" class="file-input">
+                            </div>
+                            <textarea id="private-key" rows="3" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;..."></textarea>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
             <!-- Run Button -->
             <div class="actions">
                 <button id="run-btn" class="run-btn" onclick="runAnsible()">
                     <span class="icon">▶️</span> Run
+                </button>
+                <button id="cancel-btn" class="btn-secondary btn-danger hidden" onclick="cancelCurrentJob()" title="Cancel Execution">
+                    <span class="icon">🛑</span> Stop
                 </button>
             </div>
 
             <!-- Output Section -->
             <section id="output-section" class="section hidden">
                 <div class="output-header">
-                    <h2>📤 Output</h2>
-                    <div style="display: flex; gap: 8px;">
+                    <div class="output-title-row">
+                        <h2>📤 Output</h2>
+                        <span id="output-duration" class="duration-badge hidden">0.0s</span>
+                    </div>
+                    <div class="output-action-btns">
                         <button id="copy-btn" class="download-btn hidden" onclick="copyOutput()" title="Copy output">
                             <span class="icon">📋</span> Copy
                         </button>
@@ -267,8 +340,44 @@ webserver.example.com
                         </button>
                     </div>
                 </div>
+
+                <!-- Structured Play Recap Badges -->
+                <div id="recap-bar" class="recap-bar hidden">
+                    <div class="recap-badge recap-ok" title="Successful Tasks">
+                        <span class="recap-label">OK:</span> <span id="recap-ok-count">0</span>
+                    </div>
+                    <div class="recap-badge recap-changed" title="Changed Tasks">
+                        <span class="recap-label">CHANGED:</span> <span id="recap-changed-count">0</span>
+                    </div>
+                    <div class="recap-badge recap-unreachable" title="Unreachable Hosts">
+                        <span class="recap-label">UNREACHABLE:</span> <span id="recap-unreachable-count">0</span>
+                    </div>
+                    <div class="recap-badge recap-failed" title="Failed Tasks">
+                        <span class="recap-label">FAILED:</span> <span id="recap-failed-count">0</span>
+                    </div>
+                    <div class="recap-badge recap-skipped" title="Skipped Tasks">
+                        <span class="recap-label">SKIPPED:</span> <span id="recap-skipped-count">0</span>
+                    </div>
+                </div>
+
+                <!-- Log Filter & Search Toolbar -->
+                <div class="output-toolbar">
+                    <div class="output-filters">
+                        <button class="filter-btn active" data-filter="all" onclick="filterOutput('all')">All</button>
+                        <button class="filter-btn" data-filter="changed" onclick="filterOutput('changed')">🟡 Changed Only</button>
+                        <button class="filter-btn" data-filter="failed" onclick="filterOutput('failed')">🔴 Failed Only</button>
+                    </div>
+                    <div class="output-search">
+                        <input type="text" id="output-search-input" placeholder="Search output (Ctrl+F)..." oninput="searchOutput(this.value)">
+                        <span id="search-count" class="search-count hidden">0 matches</span>
+                    </div>
+                    <div class="autoscroll-control">
+                        <label><input type="checkbox" id="autoscroll-chk" checked> Auto-scroll</label>
+                    </div>
+                </div>
+
                 <div id="output-status" class="output-status"></div>
-                <pre id="output-content"></pre>
+                <pre id="output-content" class="terminal-view"></pre>
             </section>
         </div>
 

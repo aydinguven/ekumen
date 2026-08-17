@@ -61,6 +61,7 @@ class Config:
     INVENTORY_DIR = _get_env('EKUMEN_INVENTORY_DIR', 'ANSIBLE_SHUTTLE_INVENTORY_DIR', default='/opt/ekumen/inventories')
     COLLECTIONS_PATH = _get_env('EKUMEN_COLLECTIONS_PATH', default='/opt/ekumen/collections')
     ROLES_PATH = _get_env('EKUMEN_ROLES_PATH', default='/opt/ekumen/roles')
+    DB_PATH = _get_env('EKUMEN_DB_PATH', default='')
 
     # Galaxy settings
     GALAXY_TIMEOUT = _get_env_int('EKUMEN_GALAXY_TIMEOUT', default=300)

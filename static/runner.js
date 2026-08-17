@@ -1,9 +1,13 @@
-/* Ekumen - Ansible Runner & Main Application Logic */
+/* Ekumen - Real-Time Streaming Ansible Runner & Terminal */
 
 let currentMode = 'adhoc';
 let lastOutputRaw = '';
-let currentRunId = '';
+let currentJobId = null;
+let currentEventSource = null;
+let currentFilter = 'all';
 let playbookEditor = null; // CodeMirror instance
+let executionStartTime = null;
+let executionTimer = null;
 
 /**
  * Switch between Ad-hoc and Playbook modes.
@@ -11,27 +15,25 @@ let playbookEditor = null; // CodeMirror instance
 function switchMode(mode) {
     currentMode = mode;
 
-    // Update button states
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
     });
 
-    // Show/hide sections
     const adhocSection = document.getElementById('adhoc-section');
     const playbookSection = document.getElementById('playbook-section');
 
     if (adhocSection) adhocSection.classList.toggle('hidden', mode !== 'adhoc');
     if (playbookSection) playbookSection.classList.toggle('hidden', mode !== 'playbook');
 
-    // Refresh CodeMirror when switching to playbook
     if (mode === 'playbook') {
         refreshCodeMirror();
         loadPlaybookList();
+        loadPlaybookTemplatesDropdown();
     }
 }
 
 /**
- * Toggle visibility of password fields.
+ * Toggle password visibility.
  */
 function togglePassword(inputId, iconId) {
     const passwordInput = document.getElementById(inputId);
@@ -68,7 +70,6 @@ function copyFromRegular(sourceId, targetId) {
 
     targetEl.value = sourceEl.value;
 
-    // Visual feedback
     targetEl.style.transition = 'background-color 0.3s ease';
     targetEl.style.backgroundColor = 'rgba(99, 102, 241, 0.25)';
     setTimeout(() => {
@@ -77,38 +78,50 @@ function copyFromRegular(sourceId, targetId) {
 }
 
 /**
+ * Load SSH Key content from user-selected local file.
+ */
+function loadSSHKeyFromFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('private-key').value = e.target.result;
+        showToast(`Loaded key: ${file.name}`, 'info');
+    };
+    reader.readAsText(file);
+}
+
+/**
  * Parse ANSI color and style escape codes into safe HTML spans.
  */
 function ansiToHtml(text) {
     if (!text) return '';
 
-    // First escape HTML entities
     let escaped = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 
-    // ANSI color map
     const colorMap = {
         '30': 'color: #64748b;',
-        '31': 'color: #ef4444; font-weight: 600;', // red (failures)
-        '32': 'color: #22c55e; font-weight: 600;', // green (ok/success)
-        '33': 'color: #eab308; font-weight: 600;', // yellow (changed)
+        '31': 'color: #ef4444; font-weight: 600;', // red
+        '32': 'color: #22c55e; font-weight: 600;', // green
+        '33': 'color: #eab308; font-weight: 600;', // yellow
         '34': 'color: #3b82f6;', // blue
         '35': 'color: #a855f7;', // magenta
-        '36': 'color: #06b6d4; font-weight: 600;', // cyan (skipping/item)
+        '36': 'color: #06b6d4; font-weight: 600;', // cyan
         '37': 'color: #f1f5f9;', // white
-        '90': 'color: #94a3b8;', // bright black/gray
-        '91': 'color: #f87171;', // bright red
-        '92': 'color: #4ade80;', // bright green
-        '93': 'color: #fde047;', // bright yellow
-        '94': 'color: #60a5fa;', // bright blue
-        '95': 'color: #c084fc;', // bright magenta
-        '96': 'color: #22d3ee;', // bright cyan
-        '97': 'color: #ffffff;'  // bright white
+        '90': 'color: #94a3b8;',
+        '91': 'color: #f87171;',
+        '92': 'color: #4ade80;',
+        '93': 'color: #fde047;',
+        '94': 'color: #60a5fa;',
+        '95': 'color: #c084fc;',
+        '96': 'color: #22d3ee;',
+        '97': 'color: #ffffff;'
     };
 
-    // Replace ANSI color codes
     escaped = escaped.replace(/\x1b\[(\d+(?:;\d+)*)m/g, (match, codeStr) => {
         const codes = codeStr.split(';');
         if (codes.includes('0') || codes.includes('00')) {
@@ -126,33 +139,211 @@ function ansiToHtml(text) {
         return '';
     });
 
-    // Remove any leftover non-color ANSI escape sequences
     escaped = escaped.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
-
     return escaped;
 }
 
 /**
- * Download last output as a text file.
+ * Filter terminal output by task state (all / changed / failed).
  */
-function downloadOutput() {
-    if (!lastOutputRaw) {
-        showToast('No output available to download', 'error');
+function filterOutput(type) {
+    currentFilter = type;
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === type);
+    });
+
+    const outputContent = document.getElementById('output-content');
+    if (!lastOutputRaw) return;
+
+    if (type === 'all') {
+        outputContent.innerHTML = ansiToHtml(lastOutputRaw);
         return;
     }
-    const url = currentRunId ? `/download?id=${encodeURIComponent(currentRunId)}` : '/download';
-    window.location.href = url;
+
+    const lines = lastOutputRaw.split('\n');
+    const filteredLines = [];
+    let capturing = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const plain = line.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+
+        if (plain.startsWith('TASK [') || plain.startsWith('PLAY [')) {
+            capturing = false;
+        }
+
+        if (type === 'changed' && (plain.includes('changed: [') || plain.includes('changed='))) {
+            capturing = true;
+            // Also include previous TASK header if available
+            if (i > 0 && lines[i-1].includes('TASK [')) {
+                filteredLines.push(lines[i-1]);
+            }
+        } else if (type === 'failed' && (plain.includes('fatal: [') || plain.includes('failed: [') || plain.includes('failed=') || plain.includes('ERROR'))) {
+            capturing = true;
+            if (i > 0 && lines[i-1].includes('TASK [')) {
+                filteredLines.push(lines[i-1]);
+            }
+        }
+
+        if (capturing || plain.includes('PLAY RECAP')) {
+            filteredLines.push(line);
+        }
+    }
+
+    outputContent.innerHTML = ansiToHtml(filteredLines.join('\n') || `(No ${type} tasks found in output)`);
 }
 
 /**
- * Copy terminal output to clipboard.
+ * Real-time text search inside terminal output.
+ */
+function searchOutput(query) {
+    const searchCountEl = document.getElementById('search-count');
+    const outputContent = document.getElementById('output-content');
+    if (!lastOutputRaw || !outputContent) return;
+
+    if (!query || !query.trim()) {
+        if (searchCountEl) searchCountEl.classList.add('hidden');
+        filterOutput(currentFilter);
+        return;
+    }
+
+    const cleanQuery = query.trim();
+    const cleanRaw = lastOutputRaw;
+    const regex = new RegExp(`(${cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const matches = cleanRaw.match(regex) || [];
+
+    if (searchCountEl) {
+        searchCountEl.textContent = `${matches.length} match${matches.length === 1 ? '' : 'es'}`;
+        searchCountEl.classList.remove('hidden');
+    }
+
+    // Render with highlighted spans
+    let html = ansiToHtml(cleanRaw);
+    html = html.replace(regex, '<span class="search-highlight">$1</span>');
+    outputContent.innerHTML = html;
+}
+
+/**
+ * Render structured play recap badges.
+ */
+function renderRecapBadges(recap) {
+    const recapBar = document.getElementById('recap-bar');
+    if (!recapBar || !recap) return;
+
+    const okCount = document.getElementById('recap-ok-count');
+    const changedCount = document.getElementById('recap-changed-count');
+    const unreachableCount = document.getElementById('recap-unreachable-count');
+    const failedCount = document.getElementById('recap-failed-count');
+    const skippedCount = document.getElementById('recap-skipped-count');
+
+    if (okCount) okCount.textContent = recap.ok || 0;
+    if (changedCount) changedCount.textContent = recap.changed || 0;
+    if (unreachableCount) unreachableCount.textContent = recap.unreachable || 0;
+    if (failedCount) failedCount.textContent = recap.failed || 0;
+    if (skippedCount) skippedCount.textContent = recap.skipped || 0;
+
+    const total = (recap.ok || 0) + (recap.changed || 0) + (recap.unreachable || 0) + (recap.failed || 0) + (recap.skipped || 0);
+    if (total > 0) {
+        recapBar.classList.remove('hidden');
+    } else {
+        recapBar.classList.add('hidden');
+    }
+}
+
+/**
+ * Display completed job output and stats from historical record.
+ */
+function displayJobOutput(job) {
+    const outputSection = document.getElementById('output-section');
+    const outputStatus = document.getElementById('output-status');
+    const outputContent = document.getElementById('output-content');
+    const durationBadge = document.getElementById('output-duration');
+    const downloadBtn = document.getElementById('download-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    if (cancelBtn) cancelBtn.classList.add('hidden');
+    outputSection.classList.remove('hidden');
+
+    if (job.status === 'success') {
+        outputStatus.className = 'output-status success';
+        outputStatus.textContent = '✅ Execution Succeeded';
+    } else if (job.status === 'cancelled') {
+        outputStatus.className = 'output-status error';
+        outputStatus.textContent = '🛑 Execution Cancelled';
+    } else {
+        outputStatus.className = 'output-status error';
+        outputStatus.textContent = '❌ Execution Failed';
+    }
+
+    if (durationBadge && job.duration) {
+        durationBadge.textContent = `${job.duration}s`;
+        durationBadge.classList.remove('hidden');
+    }
+
+    lastOutputRaw = job.output || '';
+    outputContent.innerHTML = ansiToHtml(lastOutputRaw);
+
+    if (lastOutputRaw) {
+        if (downloadBtn) downloadBtn.classList.remove('hidden');
+        if (copyBtn) copyBtn.classList.remove('hidden');
+    }
+
+    renderRecapBadges(job.recap);
+}
+
+/**
+ * Cancel currently running active job.
+ */
+async function cancelCurrentJob() {
+    if (!currentJobId) return;
+
+    const cancelBtn = document.getElementById('cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.disabled = true;
+        cancelBtn.innerHTML = '<span class="icon">⏳</span> Stopping...';
+    }
+
+    try {
+        const response = await fetch(`/jobs/${encodeURIComponent(currentJobId)}/cancel`, { method: 'POST' });
+        const res = await response.json();
+        if (res.success) {
+            showToast('Sent cancellation signal to job', 'info');
+        }
+    } catch (e) {
+        showToast('Cancel failed: ' + e.message, 'error');
+    }
+}
+
+/**
+ * Download last output.
+ */
+function downloadOutput() {
+    if (!lastOutputRaw) {
+        showToast('No output to download', 'error');
+        return;
+    }
+    const cleanText = lastOutputRaw.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+    const blob = new Blob([cleanText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ekumen_output_${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/**
+ * Copy terminal output.
  */
 function copyOutput() {
     if (!lastOutputRaw) {
         showToast('No output to copy', 'error');
         return;
     }
-    navigator.clipboard.writeText(lastOutputRaw).then(() => {
+    const cleanText = lastOutputRaw.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+    navigator.clipboard.writeText(cleanText).then(() => {
         showToast('Output copied to clipboard', 'success');
     }).catch(() => {
         showToast('Failed to copy output', 'error');
@@ -160,15 +351,18 @@ function copyOutput() {
 }
 
 /**
- * Execute Ansible command or playbook.
+ * Execute Ansible command or playbook with real-time SSE streaming.
  */
 async function runAnsible() {
     const runBtn = document.getElementById('run-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
     const downloadBtn = document.getElementById('download-btn');
     const copyBtn = document.getElementById('copy-btn');
     const outputSection = document.getElementById('output-section');
     const outputStatus = document.getElementById('output-status');
     const outputContent = document.getElementById('output-content');
+    const durationBadge = document.getElementById('output-duration');
+    const recapBar = document.getElementById('recap-bar');
 
     const inventoryVal = document.getElementById('inventory').value.trim();
     if (!inventoryVal) {
@@ -188,7 +382,15 @@ async function runAnsible() {
         become: true,
         become_method: 'sudo',
         become_user: 'root',
-        become_password: document.getElementById('password').value
+        become_password: document.getElementById('password').value,
+        // Advanced options
+        forks: document.getElementById('forks').value.trim(),
+        tags: document.getElementById('tags').value.trim(),
+        skip_tags: document.getElementById('skip-tags').value.trim(),
+        extra_vars: document.getElementById('extra-vars').value.trim(),
+        private_key: document.getElementById('private-key').value.trim(),
+        check_mode: document.getElementById('check-mode').checked,
+        diff_mode: document.getElementById('diff-mode').checked
     };
 
     if (document.getElementById('different-become').checked) {
@@ -207,72 +409,147 @@ async function runAnsible() {
             return;
         }
         payload.playbook = playbookVal;
+        payload.playbook_name = currentLoadedPlaybook || 'Playbook';
     }
 
-    // UI Loading State
+    // Reset UI state
     runBtn.disabled = true;
     runBtn.innerHTML = '<span class="icon">⏳</span> Running...';
+    if (cancelBtn) {
+        cancelBtn.disabled = false;
+        cancelBtn.innerHTML = '<span class="icon">🛑</span> Stop';
+        cancelBtn.classList.remove('hidden');
+    }
     if (downloadBtn) downloadBtn.classList.add('hidden');
     if (copyBtn) copyBtn.classList.add('hidden');
+    if (recapBar) recapBar.classList.add('hidden');
+    if (durationBadge) durationBadge.classList.add('hidden');
+
     outputSection.classList.remove('hidden');
     outputStatus.className = 'output-status running';
-    outputStatus.textContent = '⏳ Executing Ansible...';
-    outputContent.innerHTML = 'Connecting and executing...';
+    outputStatus.textContent = '⏳ Starting Ansible execution...';
+    outputContent.textContent = 'Initializing execution...';
+    lastOutputRaw = '';
 
-    // Smooth scroll to output
     outputSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
+    // Start duration counter
+    executionStartTime = Date.now();
+    clearInterval(executionTimer);
+    executionTimer = setInterval(() => {
+        const elapsed = ((Date.now() - executionStartTime) / 1000).toFixed(1);
+        if (durationBadge) {
+            durationBadge.textContent = `${elapsed}s`;
+            durationBadge.classList.remove('hidden');
+        }
+    }, 200);
+
     try {
-        const response = await fetch('/run', {
+        // Start async job
+        const postResp = await fetch('/jobs', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        const result = await response.json();
-        currentRunId = result.run_id || '';
-
-        if (result.success) {
-            outputStatus.className = 'output-status success';
-            outputStatus.textContent = '✅ Execution Succeeded';
-        } else {
-            outputStatus.className = 'output-status error';
-            outputStatus.textContent = '❌ Execution Failed';
+        const postData = await postResp.json();
+        if (!postData.success) {
+            throw new Error(postData.error || 'Failed to start job');
         }
 
-        let fullOutput = '';
-        if (result.output) fullOutput += result.output;
-        if (result.error) {
-            if (fullOutput) fullOutput += '\n\n--- STDERR / ERROR ---\n';
-            fullOutput += result.error;
+        currentJobId = postData.job_id;
+        outputStatus.textContent = '⏳ Executing tasks in real time...';
+        outputContent.textContent = '';
+
+        // Close any previous SSE
+        if (currentEventSource) {
+            currentEventSource.close();
         }
 
-        lastOutputRaw = fullOutput || 'No output received.';
-        outputContent.innerHTML = ansiToHtml(lastOutputRaw);
+        // Open SSE Stream
+        currentEventSource = new EventSource(postData.stream_url);
 
-        if (lastOutputRaw) {
-            if (downloadBtn) downloadBtn.classList.remove('hidden');
-            if (copyBtn) copyBtn.classList.remove('hidden');
-        }
+        currentEventSource.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data);
 
-        // Save entry to history
-        addToHistory({
-            mode: currentMode,
-            module: currentMode === 'adhoc' ? document.getElementById('module').value : null,
-            args: currentMode === 'adhoc' ? document.getElementById('args').value : null,
-            playbook: currentMode === 'playbook' ? (playbookEditor ? playbookEditor.getValue() : document.getElementById('playbook').value) : null,
-            hosts: inventoryVal,
-            verbosity: document.getElementById('verbosity').value
-        });
+                if (msg.type === 'chunk') {
+                    lastOutputRaw += msg.text;
+                    outputContent.innerHTML = ansiToHtml(lastOutputRaw);
+
+                    const autoscroll = document.getElementById('autoscroll-chk');
+                    if (autoscroll && autoscroll.checked) {
+                        outputContent.scrollTop = outputContent.scrollHeight;
+                    }
+                } else if (msg.type === 'done') {
+                    clearInterval(executionTimer);
+                    currentEventSource.close();
+                    currentEventSource = null;
+
+                    if (cancelBtn) cancelBtn.classList.add('hidden');
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '<span class="icon">▶️</span> Run';
+
+                    if (msg.status === 'success') {
+                        outputStatus.className = 'output-status success';
+                        outputStatus.textContent = '✅ Execution Succeeded';
+                    } else if (msg.status === 'cancelled') {
+                        outputStatus.className = 'output-status error';
+                        outputStatus.textContent = '🛑 Execution Cancelled';
+                    } else {
+                        outputStatus.className = 'output-status error';
+                        outputStatus.textContent = '❌ Execution Failed';
+                    }
+
+                    if (durationBadge && msg.duration) {
+                        durationBadge.textContent = `${msg.duration}s`;
+                    }
+
+                    if (lastOutputRaw) {
+                        if (downloadBtn) downloadBtn.classList.remove('hidden');
+                        if (copyBtn) copyBtn.classList.remove('hidden');
+                    }
+
+                    if (msg.recap) {
+                        renderRecapBadges(msg.recap);
+                    }
+
+                    // Refresh history sidebar from server
+                    renderHistory();
+                } else if (msg.type === 'error') {
+                    clearInterval(executionTimer);
+                    currentEventSource.close();
+                    outputStatus.className = 'output-status error';
+                    outputStatus.textContent = '❌ ' + msg.message;
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '<span class="icon">▶️</span> Run';
+                    if (cancelBtn) cancelBtn.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error('SSE JSON error:', err);
+            }
+        };
+
+        currentEventSource.onerror = () => {
+            clearInterval(executionTimer);
+            if (currentEventSource) {
+                currentEventSource.close();
+                currentEventSource = null;
+            }
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<span class="icon">▶️</span> Run';
+            if (cancelBtn) cancelBtn.classList.add('hidden');
+            renderHistory();
+        };
 
     } catch (error) {
+        clearInterval(executionTimer);
         outputStatus.className = 'output-status error';
-        outputStatus.textContent = '❌ Network / Server Error';
+        outputStatus.textContent = '❌ Error: ' + error.message;
         outputContent.textContent = 'Request failed: ' + error.message;
-        lastOutputRaw = '';
-    } finally {
         runBtn.disabled = false;
         runBtn.innerHTML = '<span class="icon">▶️</span> Run';
+        if (cancelBtn) cancelBtn.classList.add('hidden');
     }
 }
 
@@ -293,6 +570,16 @@ document.addEventListener('keydown', (e) => {
             saveCurrentInventory();
         }
     }
+    // Ctrl+F or Cmd+F to focus search input if output is visible
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        const searchInput = document.getElementById('output-search-input');
+        const outputSection = document.getElementById('output-section');
+        if (searchInput && outputSection && !outputSection.classList.contains('hidden')) {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
+    }
 });
 
 // ========== INITIALIZATION ==========
@@ -303,7 +590,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 
-    // Color Theme (Red Hat / Default)
+    // Color Theme (Red Hat / Purple)
     const savedColor = localStorage.getItem('color-theme') || 'default';
     if (savedColor === 'purple') {
         document.documentElement.setAttribute('data-color-theme', 'purple');
@@ -332,9 +619,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Migrate any legacy local inventories to server
     await migrateLocalStorageInventories();
 
-    // Render inventories and collections
+    // Render inventories, templates, and collections
     await Promise.all([
         renderInventoryDropdown(),
+        loadPlaybookTemplatesDropdown(),
         loadCollectionsAndRoles()
     ]);
 

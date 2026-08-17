@@ -73,3 +73,15 @@ def delete_inventory(name):
         return jsonify({'success': False, 'error': error}), 404
 
     return jsonify({'success': True})
+
+
+@inventories_bp.route('/inventories/parse', methods=['POST'])
+def parse_inventory_content():
+    """Parse raw inventory text and return structured host/group tree."""
+    from ekumen.services.inventory_parser import parse_inventory
+
+    data = request.get_json(silent=True) or {}
+    content = str(data.get('content', ''))
+    parsed = parse_inventory(content)
+
+    return jsonify({'success': True, 'data': parsed})

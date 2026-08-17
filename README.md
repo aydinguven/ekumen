@@ -26,14 +26,17 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 
 ## Features
 
-- **Ad-hoc Commands** — Run quick Ansible modules against your hosts
-- **Playbook Execution** — Execute full YAML playbooks from the browser
-- **Playbook Library** — Save and load playbooks from server storage
-- **Inventory Management** — Save and reuse inventories from the sidebar
-- **Collections & Roles** — Install, manage, and import/export Ansible Galaxy content
-- **Secure Authentication** — SSH password and privilege escalation support
-- **Output Download** — Save command outputs as text files
-- **Command History** — Browse and restore previous commands
+- **Live Real-time Output Streaming** — Stream Ansible stdout/stderr line-by-line via Server-Sent Events (SSE)
+- **Active Job Cancellation** — Stop running tasks on demand with a single click
+- **Structured Play Recap Badges** — Visual `ok`, `changed`, `unreachable`, `failed`, and `skipped` metrics
+- **Persistent SQLite Job History** — Search, browse, and re-run past executions with duration tracking
+- **Advanced Execution Flags** — Check Mode (`--check`), Diff (`--diff`), Extra Vars (`-e`), Tags (`--tags`), and Forks (`-f`)
+- **SSH Key & Password Authentication** — Support for uploaded/pasted SSH private keys and sudo escalation
+- **Playbook Templates & Snippets** — 1-click templates for System Update, Nginx, Docker, Users, and Diagnostics
+- **Inventory Structure Explorer** — Interactive visual tree parsing INI/YAML groups, hosts, and variables
+- **In-Browser Search & Filtering** — `Ctrl+F` log search and task filters (*All*, *Changed Only*, *Failed Only*)
+- **Playbook & Inventory Libraries** — Server-backed storage for playbooks and inventories
+- **Collections & Roles Management** — Install, manage, and import/export Ansible Galaxy content
 
 ## Quick Install
 
@@ -104,11 +107,11 @@ sudo rm -rf /opt/ekumen
 | Host Limiting | v1.5.4 | Target specific hosts with `--limit` |
 | Collections & Roles | v1.6.0 | Install/manage Ansible Galaxy content |
 | Containerization | v1.7.0 | Docker/Podman support |
-| Modular Architecture & Test Suite | v1.8.0 | Package refactor, application factory, and pytest suite |
+| Real-Time Streaming & SQLite Architecture | v1.8.0 | Live SSE streaming, Play Recap badges, SQLite history, templates, and 39-test suite |
 
-### Planned
+## License
 
-- [ ] **Live Output Streaming** — Real-time output via SSE/WebSockets
+MIT License — see [LICENSE](LICENSE) for details. TCMB is exempt from all license restrictions
 
 ## License
 

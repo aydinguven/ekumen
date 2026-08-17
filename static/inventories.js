@@ -1,6 +1,108 @@
-/* Ekumen - Inventory Management (Backend API with localStorage migration) */
+/* Ekumen - Inventory Management & Structure Explorer */
 
 let currentSelectedInventory = null;
+let inventoryExplorerOpen = false;
+
+/**
+ * Toggle visibility of Inventory Hierarchy Explorer.
+ */
+function toggleInventoryExplorer() {
+    const explorerEl = document.getElementById('inventory-explorer');
+    const toggleBtn = document.getElementById('toggle-explorer-btn');
+    if (!explorerEl) return;
+
+    inventoryExplorerOpen = !inventoryExplorerOpen;
+    explorerEl.classList.toggle('hidden', !inventoryExplorerOpen);
+
+    if (toggleBtn) {
+        toggleBtn.classList.toggle('active', inventoryExplorerOpen);
+    }
+
+    if (inventoryExplorerOpen) {
+        refreshInventoryExplorer();
+    }
+}
+
+/**
+ * Event handler when inventory text changes.
+ */
+function onInventoryChanged() {
+    if (inventoryExplorerOpen) {
+        // Debounced refresh
+        clearTimeout(window._invDebounce);
+        window._invDebounce = setTimeout(refreshInventoryExplorer, 400);
+    }
+}
+
+/**
+ * Request server to parse current inventory content and display tree.
+ */
+async function refreshInventoryExplorer() {
+    const content = document.getElementById('inventory').value;
+    const treeEl = document.getElementById('explorer-tree');
+    const countEl = document.getElementById('explorer-host-count');
+    if (!treeEl) return;
+
+    try {
+        const response = await fetch('/inventories/parse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+        });
+
+        const res = await response.json();
+        if (res.success && res.data) {
+            const data = res.data;
+            if (countEl) countEl.textContent = data.total_hosts || 0;
+
+            const groups = data.groups || {};
+            const groupNames = Object.keys(groups);
+
+            if (groupNames.length === 0) {
+                treeEl.innerHTML = '<p class="empty-text">No hosts or groups detected</p>';
+                return;
+            }
+
+            treeEl.innerHTML = groupNames.map(gname => {
+                const group = groups[gname];
+                const hosts = group.hosts || [];
+                const vars = group.vars || {};
+                const children = group.children || [];
+
+                const hostsHtml = hosts.map(h => {
+                    const hostName = typeof h === 'string' ? h : h.name;
+                    const hvars = typeof h === 'object' && h.vars ? h.vars : {};
+                    const varsStr = Object.keys(hvars).length > 0
+                        ? Object.entries(hvars).map(([k, v]) => `${k}=${v}`).join(' ')
+                        : '';
+
+                    return `
+                        <div class="tree-host-item">
+                            🖥️ <strong>${escapeHtml(hostName)}</strong>
+                            ${varsStr ? `<span class="tree-host-vars">[${escapeHtml(varsStr)}]</span>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                const childrenHtml = children.length > 0
+                    ? `<div class="tree-children"><em>Subgroups:</em> ${children.join(', ')}</div>`
+                    : '';
+
+                return `
+                    <div class="tree-group">
+                        <div class="tree-group-name">📁 [${escapeHtml(gname)}] (${hosts.length} hosts)</div>
+                        ${childrenHtml}
+                        <div class="tree-hosts-list">
+                            ${hostsHtml || '<span class="tree-host-vars">(no direct hosts)</span>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    } catch (e) {
+        console.error('Failed to parse inventory:', e);
+    }
+}
 
 /**
  * Migrate legacy inventories from localStorage to server on initial load.
@@ -87,6 +189,7 @@ async function loadInventoryFromSelect() {
             currentSelectedInventory = data.name;
             if (deleteBtn) deleteBtn.style.display = 'inline-block';
             showToast(`Loaded inventory: ${data.name}`, 'success');
+            if (inventoryExplorerOpen) refreshInventoryExplorer();
         } else {
             showToast('Failed to load inventory: ' + data.error, 'error');
         }
@@ -151,6 +254,7 @@ async function deleteCurrentInventory() {
             const deleteBtn = document.getElementById('delete-inventory-btn');
             if (deleteBtn) deleteBtn.style.display = 'none';
             await renderInventoryDropdown();
+            if (inventoryExplorerOpen) refreshInventoryExplorer();
         } else {
             showToast('Failed to delete inventory: ' + data.error, 'error');
         }

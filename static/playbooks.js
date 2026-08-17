@@ -1,6 +1,55 @@
-/* Ekumen - Playbook Library Management */
+/* Ekumen - Playbook Library & Templates Management */
 
 let currentLoadedPlaybook = null;
+
+/**
+ * Load list of built-in templates into dropdown.
+ */
+async function loadPlaybookTemplatesDropdown() {
+    const select = document.getElementById('playbook-templates');
+    if (!select) return;
+
+    try {
+        const response = await fetch('/templates');
+        const data = await response.json();
+        const templates = data.templates || [];
+
+        select.innerHTML = '<option value="">📋 Templates...</option>';
+        templates.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.textContent = `${t.icon || '📄'} ${t.name}`;
+            opt.title = t.description || '';
+            select.appendChild(opt);
+        });
+    } catch (e) {
+        console.error('Failed to load playbook templates:', e);
+    }
+}
+
+/**
+ * Insert selected template into editor.
+ */
+async function loadPlaybookTemplate(templateId) {
+    if (!templateId) return;
+
+    try {
+        const response = await fetch(`/templates/${encodeURIComponent(templateId)}`);
+        const data = await response.json();
+
+        if (data.success && data.template) {
+            const content = data.template.content;
+            const textarea = document.getElementById('playbook');
+            if (textarea) textarea.value = content;
+            if (playbookEditor) playbookEditor.setValue(content);
+
+            showToast(`Loaded template: ${data.template.name}`, 'info');
+            document.getElementById('playbook-templates').value = '';
+        }
+    } catch (e) {
+        showToast('Failed to load template: ' + e.message, 'error');
+    }
+}
 
 /**
  * Load list of saved playbooks into dropdown.
