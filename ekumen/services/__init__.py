@@ -11,6 +11,7 @@ from ekumen.services.database import JobDatabase
 from ekumen.services.job_manager import JobManager
 from ekumen.services.templates import list_templates, get_template, PLAYBOOK_TEMPLATES
 from ekumen.services.inventory_parser import parse_inventory
+from ekumen.services.connectivity import ConnectivityChecker, extract_structured_facts
 
 __all__ = [
     'OutputCache',
@@ -28,4 +29,6 @@ __all__ = [
     'get_template',
     'PLAYBOOK_TEMPLATES',
     'parse_inventory',
+    'ConnectivityChecker',
+    'extract_structured_facts',
 ]

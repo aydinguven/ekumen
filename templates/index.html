@@ -139,6 +139,8 @@
                         </select>
                         <button class="btn-secondary btn-sm" onclick="saveCurrentInventory()"
                             title="Save current hosts">💾</button>
+                        <button class="btn-secondary btn-sm" id="ping-hosts-btn" onclick="testHostConnectivity()"
+                            title="Test ping latency & connectivity">⚡ Ping</button>
                         <button class="btn-secondary btn-sm" id="toggle-explorer-btn" onclick="toggleInventoryExplorer()"
                             title="Explore inventory groups & hosts">🌳 Structure</button>
                         <button class="btn-secondary btn-sm btn-danger" id="delete-inventory-btn"
@@ -152,6 +154,25 @@ webserver.example.com
 [webservers]
 web1.example.com
 web2.example.com"></textarea>
+                </div>
+
+                <!-- Live Connectivity Status Panel (Collapsible / Dynamic) -->
+                <div id="connectivity-panel" class="connectivity-panel hidden">
+                    <div class="connectivity-header">
+                        <div class="connectivity-title">
+                            <strong>⚡ Host Connectivity</strong>
+                            <div id="connectivity-summary" class="connectivity-summary">
+                                <span id="conn-total" class="conn-stat">Total: 0</span>
+                                <span id="conn-online" class="conn-stat badge-online">🟢 0 Online</span>
+                                <span id="conn-offline" class="conn-stat badge-offline">🔴 0 Offline</span>
+                                <span id="conn-latency" class="conn-stat badge-latency">⏱️ 0ms avg</span>
+                            </div>
+                        </div>
+                        <button class="btn-secondary btn-xs" onclick="testHostConnectivity()" title="Re-test connectivity">🔄 Re-test</button>
+                    </div>
+                    <div id="connectivity-hosts-grid" class="connectivity-hosts-grid">
+                        <!-- Populated dynamically by JS -->
+                    </div>
                 </div>
 
                 <!-- Inventory Explorer Tree (Collapsible) -->
@@ -543,6 +564,86 @@ roles:
                 <button class="run-btn" id="import-btn" onclick="performImport()">
                     <span class="icon">📥</span> Import All
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Host Facts Modal -->
+    <div id="host-facts-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeHostFactsModal()"></div>
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <div class="facts-modal-title-row">
+                    <h3 id="facts-modal-host">🖥️ Host Facts</h3>
+                    <span id="facts-modal-os-badge" class="os-badge">Linux</span>
+                </div>
+                <button class="modal-close" onclick="closeHostFactsModal()">✕</button>
+            </div>
+            <div class="modal-body" id="facts-modal-body">
+                <div id="facts-loading" class="loading-text">⏳ Gathering facts from host with Ansible...</div>
+                <div id="facts-content" class="hidden">
+                    <!-- Specs Grid -->
+                    <div class="facts-specs-grid">
+                        <div class="spec-card">
+                            <span class="spec-label">Operating System</span>
+                            <strong id="spec-os" class="spec-value">-</strong>
+                        </div>
+                        <div class="spec-card">
+                            <span class="spec-label">Kernel</span>
+                            <strong id="spec-kernel" class="spec-value">-</strong>
+                        </div>
+                        <div class="spec-card">
+                            <span class="spec-label">CPU Cores</span>
+                            <strong id="spec-cpu" class="spec-value">-</strong>
+                        </div>
+                        <div class="spec-card">
+                            <span class="spec-label">Architecture</span>
+                            <strong id="spec-arch" class="spec-value">-</strong>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry & Resource Bars -->
+                    <div class="telemetry-section">
+                        <div class="telemetry-card">
+                            <div class="telemetry-header">
+                                <span>🧠 Memory Usage</span>
+                                <span id="spec-mem-text">0 MB / 0 MB (0%)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="spec-mem-fill" class="progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Network & Storage -->
+                    <div class="network-facts-card">
+                        <h4>🌐 Network</h4>
+                        <div class="net-specs">
+                            <div><strong>IPv4 Address:</strong> <span id="spec-ip">-</span></div>
+                            <div><strong>Interface:</strong> <span id="spec-net-if">-</span></div>
+                            <div><strong>MAC Address:</strong> <span id="spec-mac">-</span></div>
+                            <div><strong>Gateway:</strong> <span id="spec-gw">-</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Storage Mounts -->
+                    <div id="storage-mounts-card" class="network-facts-card" style="margin-top: 10px;">
+                        <h4>💾 Storage Partitions</h4>
+                        <div id="storage-mounts-list" class="mounts-list"></div>
+                    </div>
+
+                    <!-- Raw Facts Expandable -->
+                    <details class="raw-facts-details" style="margin-top: 12px;">
+                        <summary style="cursor: pointer; font-weight: 600; color: var(--text-primary);">📜 Raw Facts (JSON)</summary>
+                        <div style="margin-top: 8px; display: flex; justify-content: flex-end;">
+                            <button class="btn-secondary btn-xs" onclick="copyRawFacts()">📋 Copy JSON</button>
+                        </div>
+                        <pre id="raw-facts-json" class="raw-facts-pre"></pre>
+                    </details>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeHostFactsModal()">Close</button>
             </div>
         </div>
     </div>

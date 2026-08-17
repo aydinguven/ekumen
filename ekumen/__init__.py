@@ -14,13 +14,15 @@ from ekumen.services.collections import CollectionManager
 from ekumen.services.output_cache import OutputCache
 from ekumen.services.database import JobDatabase
 from ekumen.services.job_manager import JobManager
+from ekumen.services.connectivity import ConnectivityChecker
 from ekumen.api import (
     runner_bp,
     playbooks_bp,
     inventories_bp,
     collections_bp,
     jobs_bp,
-    templates_bp
+    templates_bp,
+    connectivity_bp
 )
 from ekumen.web import web_bp
 
@@ -71,6 +73,7 @@ def create_app(config_object=None) -> Flask:
     output_cache = OutputCache(cache_dir=cfg.OUTPUT_CACHE_DIR)
     db = JobDatabase(db_path=getattr(cfg, 'DB_PATH', None))
     job_manager = JobManager(runner=runner, db=db, output_cache=output_cache)
+    connectivity_checker = ConnectivityChecker()
 
     # Store in app extensions
     app.extensions['ekumen'] = {
@@ -81,6 +84,7 @@ def create_app(config_object=None) -> Flask:
         'output_cache': output_cache,
         'db': db,
         'job_manager': job_manager,
+        'connectivity_checker': connectivity_checker,
     }
 
     # Register Blueprints
@@ -91,5 +95,6 @@ def create_app(config_object=None) -> Flask:
     app.register_blueprint(collections_bp)
     app.register_blueprint(jobs_bp)
     app.register_blueprint(templates_bp)
+    app.register_blueprint(connectivity_bp)
 
     return app

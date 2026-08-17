@@ -8,6 +8,7 @@ from ekumen.api.inventories import inventories_bp
 from ekumen.api.collections import collections_bp
 from ekumen.api.jobs import jobs_bp
 from ekumen.api.templates import templates_bp
+from ekumen.api.connectivity import connectivity_bp
 
 __all__ = [
     'runner_bp',
@@ -16,4 +17,5 @@ __all__ = [
     'collections_bp',
     'jobs_bp',
     'templates_bp',
+    'connectivity_bp',
 ]

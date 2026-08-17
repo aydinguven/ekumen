@@ -262,3 +262,219 @@ async function deleteCurrentInventory() {
         showToast('Failed to delete inventory: ' + error.message, 'error');
     }
 }
+
+// ====================================================
+// Live Connectivity & Fact Discovery Functions
+// ====================================================
+
+let lastFetchedFactsJson = '';
+
+/**
+ * Execute ping connectivity test against all inventory hosts.
+ */
+async function testHostConnectivity() {
+    const pingBtn = document.getElementById('ping-hosts-btn');
+    const panel = document.getElementById('connectivity-panel');
+    const grid = document.getElementById('connectivity-hosts-grid');
+    const connTotal = document.getElementById('conn-total');
+    const connOnline = document.getElementById('conn-online');
+    const connOffline = document.getElementById('conn-offline');
+    const connLatency = document.getElementById('conn-latency');
+
+    const inventoryVal = document.getElementById('inventory').value.trim();
+    if (!inventoryVal) {
+        showToast('Please specify hosts in Inventory to test connectivity', 'error');
+        return;
+    }
+
+    if (pingBtn) {
+        pingBtn.disabled = true;
+        pingBtn.innerHTML = '⏳ Testing...';
+    }
+
+    panel.classList.remove('hidden');
+    grid.innerHTML = '<div class="loading-text" style="grid-column: 1/-1;">⚡ Pinging hosts concurrently...</div>';
+
+    const payload = {
+        inventory: inventoryVal,
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value,
+        private_key: document.getElementById('private-key').value.trim()
+    };
+
+    try {
+        const response = await fetch('/connectivity/ping', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.summary) {
+            const sum = data.summary;
+            if (connTotal) connTotal.textContent = `Total: ${sum.total}`;
+            if (connOnline) connOnline.textContent = `🟢 ${sum.online + sum.slow} Online`;
+            if (connOffline) connOffline.textContent = `🔴 ${sum.offline} Offline`;
+            if (connLatency) connLatency.textContent = `⏱️ ${sum.avg_latency_ms}ms avg`;
+
+            const hosts = data.hosts || {};
+            const hostList = Object.keys(hosts);
+
+            if (hostList.length === 0) {
+                grid.innerHTML = '<p class="empty-text">No hosts responded</p>';
+                return;
+            }
+
+            grid.innerHTML = hostList.map(hname => {
+                const hdata = hosts[hname];
+                const isOnline = hdata.status === 'online' || hdata.status === 'slow';
+                const cardClass = hdata.status === 'online' ? 'conn-online' :
+                    (hdata.status === 'slow' ? 'conn-slow' : 'conn-offline');
+                const pillClass = hdata.status === 'online' ? 'pill-online' :
+                    (hdata.status === 'slow' ? 'pill-slow' : 'pill-offline');
+                const pillText = hdata.status === 'online' ? '🟢 Online' :
+                    (hdata.status === 'slow' ? '🟡 Slow' : '🔴 Unreachable');
+
+                const latencyStr = hdata.latency_ms > 0 ? `${hdata.latency_ms}ms` : (hdata.error || 'Timed out');
+
+                return `
+                    <div class="host-conn-card ${cardClass}">
+                        <div class="host-conn-top">
+                            <span class="host-conn-name" title="${escapeHtml(hname)}">🖥️ ${escapeHtml(hname)}</span>
+                            <span class="host-conn-status-pill ${pillClass}">${pillText}</span>
+                        </div>
+                        <div class="host-conn-meta">
+                            <span title="${escapeHtml(hdata.error || '')}">${escapeHtml(latencyStr)}</span>
+                            ${isOnline ? `<button class="host-facts-btn" onclick="showHostFacts('${escapeHtml(hname)}')">🔍 Facts</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            showToast(`Connectivity test complete (${sum.online + sum.slow}/${sum.total} online)`, 'info');
+        } else {
+            showToast('Ping failed: ' + (data.error || 'Unknown error'), 'error');
+            grid.innerHTML = `<p class="error-text">${escapeHtml(data.error || 'Failed to ping hosts')}</p>`;
+        }
+    } catch (e) {
+        showToast('Connectivity test error: ' + e.message, 'error');
+        grid.innerHTML = `<p class="error-text">${escapeHtml(e.message)}</p>`;
+    } finally {
+        if (pingBtn) {
+            pingBtn.disabled = false;
+            pingBtn.innerHTML = '⚡ Ping';
+        }
+    }
+}
+
+/**
+ * Open host facts preview modal and fetch facts via Ansible setup module.
+ */
+async function showHostFacts(hostname) {
+    const modal = document.getElementById('host-facts-modal');
+    const hostTitle = document.getElementById('facts-modal-host');
+    const osBadge = document.getElementById('facts-modal-os-badge');
+    const loadingEl = document.getElementById('facts-loading');
+    const contentEl = document.getElementById('facts-content');
+
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+    hostTitle.textContent = `🖥️ ${hostname}`;
+    osBadge.textContent = 'Gathering facts...';
+    loadingEl.classList.remove('hidden');
+    contentEl.classList.add('hidden');
+
+    const payload = {
+        host: hostname,
+        inventory: document.getElementById('inventory').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value,
+        private_key: document.getElementById('private-key').value.trim()
+    };
+
+    try {
+        const response = await fetch('/connectivity/facts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.facts) {
+            const facts = data.facts;
+            osBadge.textContent = facts.os_name || 'Linux';
+
+            // Fill spec values
+            document.getElementById('spec-os').textContent = facts.os_name || '-';
+            document.getElementById('spec-kernel').textContent = facts.kernel || '-';
+            document.getElementById('spec-cpu').textContent = `${facts.cpus || 1} vCPUs`;
+            document.getElementById('spec-arch').textContent = facts.architecture || '-';
+
+            // Memory
+            if (facts.memory) {
+                const mem = facts.memory;
+                document.getElementById('spec-mem-text').textContent =
+                    `${mem.used_mb} MB / ${mem.total_mb} MB (${mem.used_pct}%)`;
+                document.getElementById('spec-mem-fill').style.width = `${Math.min(100, mem.used_pct)}%`;
+            }
+
+            // Network
+            if (facts.network) {
+                const net = facts.network;
+                document.getElementById('spec-ip').textContent = net.ip || '-';
+                document.getElementById('spec-net-if').textContent = net.interface || '-';
+                document.getElementById('spec-mac').textContent = net.mac || '-';
+                document.getElementById('spec-gw').textContent = net.gateway || '-';
+            }
+
+            // Storage Mounts
+            const mountsList = document.getElementById('storage-mounts-list');
+            if (mountsList) {
+                const mounts = facts.mounts || [];
+                if (mounts.length === 0) {
+                    mountsList.innerHTML = '<span class="text-muted">No partition facts available</span>';
+                } else {
+                    mountsList.innerHTML = mounts.map(m => `
+                        <div class="mount-item">
+                            <span><strong>${escapeHtml(m.mount)}</strong> (${m.fstype})</span>
+                            <span>${m.used_gb} GB / ${m.total_gb} GB (${m.used_pct}%)</span>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            // Raw JSON
+            lastFetchedFactsJson = JSON.stringify(data.raw || facts, null, 2);
+            document.getElementById('raw-facts-json').textContent = lastFetchedFactsJson;
+
+            loadingEl.classList.add('hidden');
+            contentEl.classList.remove('hidden');
+        } else {
+            loadingEl.textContent = '❌ Failed: ' + (data.error || 'Could not retrieve facts');
+        }
+    } catch (e) {
+        loadingEl.textContent = '❌ Error: ' + e.message;
+    }
+}
+
+/**
+ * Close host facts modal.
+ */
+function closeHostFactsModal() {
+    const modal = document.getElementById('host-facts-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+/**
+ * Copy raw facts JSON to clipboard.
+ */
+function copyRawFacts() {
+    if (!lastFetchedFactsJson) return;
+    navigator.clipboard.writeText(lastFetchedFactsJson).then(() => {
+        showToast('Raw facts JSON copied to clipboard', 'success');
+    });
+}
+

@@ -3,6 +3,8 @@
 ## v1.8.0 (2026-08-17)
 
 ### Added
+- **Live Host Connectivity & Ping Checker** — Concurrent ping diagnostics (`⚡ Ping`) measuring latency across all inventory hosts with status badges ($🟢$ Online, $🟡$ Slow, $🔴$ Unreachable).
+- **Host Fact Preview Card** — Interactive modal visualizing OS, kernel, CPU cores, RAM usage meter, storage partition breakdown, and network interfaces with 1-click JSON export.
 - **Real-Time Output Streaming (SSE)** — Line-by-line live stdout/stderr streaming over Server-Sent Events (`/jobs/<id>/stream`), allowing users to watch task progress in real time.
 - **Active Job Cancellation** — Interactive "Stop / Cancel" button to gracefully terminate running Ansible jobs on demand.
 - **Structured Play Recap Badges** — Automatic parsing of Ansible `PLAY RECAP` into visual badges (`ok`, `changed`, `unreachable`, `failed`, `skipped`).
@@ -11,7 +13,7 @@
 - **Built-in Playbook Templates** — 1-click templates for System Update, Nginx Setup, Docker Install, User Management, and Diagnostics.
 - **Dynamic Inventory Structure Explorer** — Visual tree explorer parsing INI/YAML inventories into groups, hosts, and variables.
 - **Log Search & Task Filters** — In-output search (`Ctrl+F`), match counter, and filters for *All*, *Changed Only*, and *Failed Only*.
-- **Automated Test Suite** — Comprehensive `pytest` test suite with 39 unit and integration tests covering all services, parsers, and API blueprints.
+- **Automated Test Suite** — Comprehensive `pytest` test suite with 43 unit and integration tests covering all services, parsers, and API blueprints.
 
 ### Refactored
 - **Modular Package Architecture** — Reorganized core application into an `ekumen` package using the Flask Application Factory pattern (`create_app()`) and Blueprints (`runner`, `playbooks`, `inventories`, `collections`, `jobs`, `templates`, `web`), while keeping root entrypoints backwards-compatible.

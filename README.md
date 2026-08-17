@@ -26,6 +26,8 @@ In Ursula K. Le Guin's Hainish Cycle, the *ansible* is a device that allows inst
 
 ## Features
 
+- **Live Host Connectivity & Ping Diagnostics** — Real-time latency checks with visual status badges ($🟢$ Online, $🟡$ Slow, $🔴$ Unreachable)
+- **Host Fact Preview Card** — Inspect OS, kernel, CPU cores, RAM meter, storage partitions, and network interfaces
 - **Live Real-time Output Streaming** — Stream Ansible stdout/stderr line-by-line via Server-Sent Events (SSE)
 - **Active Job Cancellation** — Stop running tasks on demand with a single click
 - **Structured Play Recap Badges** — Visual `ok`, `changed`, `unreachable`, `failed`, and `skipped` metrics
